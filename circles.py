@@ -7,13 +7,16 @@ import random
 import math
 
 # initial parameters
-dt = 0.01
+dt = 0.005
 box_width = 600
 box_height = 200
 width_mean = 10
 width_std = 5
 ar_mean = 5
 ar_std = 2
+
+screen_width = box_width + 200
+screen_height = box_height*2
 
 class Distribution:
     def __init__(self, mean, std):
@@ -28,7 +31,7 @@ ar_gen = Distribution(ar_mean, ar_std)
 
 
 pygame.init()
-screen = pygame.display.set_mode((box_width + 200, box_height*2))
+screen = pygame.display.set_mode((screen_width, screen_height))
 pymunk.pygame_util.positive_y_is_up = True
 draw_options = pymunk.pygame_util.DrawOptions(screen)
 
@@ -38,9 +41,9 @@ space.gravity = (0, -981)
 
 #%%
 
-floor = pymunk.Segment(space.static_body, (0, 5), (box_width, 5), 5)
-left_wall = pymunk.Segment(space.static_body, (5, 5), (5, box_height), 5)
-right_wall = pymunk.Segment(space.static_body, (box_width - 5, 5), (box_width - 5, box_height), 5)
+floor = pymunk.Segment(space.static_body, ((screen_width-box_width)/2, 5), (box_width+(screen_width-box_width)/2, 5), 5)
+left_wall = pymunk.Segment(space.static_body, ((screen_width-box_width)/2 + 5, 5), ((screen_width-box_width)/2 + 5, box_height), 5)
+right_wall = pymunk.Segment(space.static_body, (box_width + (screen_width-box_width)/2 - 5, 5), (box_width + (screen_width-box_width)/2 - 5, box_height), 5)
 
 floor.elasticity = 0.95
 floor.friction = 0.5
@@ -62,10 +65,8 @@ class Rectangle:
         self.box_height = box_height
         self.width_gen = width_gen
         self.ar_gen = ar_gen
-        self.density = 1       
-        
-        
-
+        self.density = 1     
+ 
     def create(self):
         # platelet parameters
         # bodge to make sure always positive and non-zero
@@ -75,7 +76,7 @@ class Rectangle:
 
         # initial position and angle
         self.y = box_height + 100
-        self.x = random.uniform(0, self.box_width - width)  # Ensure it fits within the box
+        self.x = random.uniform(0, self.box_width - width) + 100  # Ensure it fits within the box
         angle = random.uniform(-0.5*math.pi, 0.5*math.pi)
 
         # create the platelet
@@ -104,7 +105,7 @@ while running:
             
     screen.fill((255, 255, 255))
 
-    if random.random() < 0.01:
+    if random.random() < 0.02:
         platelets.create()
 
     space.debug_draw(draw_options)
