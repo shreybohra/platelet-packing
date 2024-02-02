@@ -110,6 +110,7 @@ clock = pygame.time.Clock()
 
 platelets = Rectangle(box_width, box_height, width_gen, ar_gen)
 total_area = 0
+elapsed_time = 0
 
 while running:
     for event in pygame.event.get():
@@ -123,6 +124,13 @@ while running:
         total_area += platelets.get_area()
 
     space.debug_draw(draw_options)
+
+    elapsed_time += dt
+    time_display = font.render(f"Elapsed time: {elapsed_time:.2f}", True, (0, 0, 0))
+    screen.blit(time_display, (box_width-100, 10))
+
+    area_display = font.render(f"Total area: {total_area:.2f}", True, (0, 0, 0))
+    screen.blit(area_display, (box_width-100, 50))
     
     pygame.display.flip()
     space.step(dt)
