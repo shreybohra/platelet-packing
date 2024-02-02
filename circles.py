@@ -29,6 +29,7 @@ ar_gen = Distribution(ar_mean, ar_std)
 
 pygame.init()
 screen = pygame.display.set_mode((box_width + 200, box_height*2))
+
 draw_options = pymunk.pygame_util.DrawOptions(screen)
 
 space = pymunk.Space()
@@ -67,8 +68,9 @@ class Rectangle:
 
     def create(self):
         # platelet parameters
-        width = self.width_gen.generate()
-        height = width * self.ar_gen.generate()
+        # bodge to make sure always positive and non-zero
+        width = abs(self.width_gen.generate()) + 1
+        height = abs(width * self.ar_gen.generate()) + 1
         mass = width * height * self.density
 
         # initial position and angle
