@@ -29,7 +29,7 @@ ar_gen = Distribution(ar_mean, ar_std)
 
 pygame.init()
 screen = pygame.display.set_mode((box_width + 200, box_height*2))
-
+pymunk.pygame_util.positive_y_is_up = True
 draw_options = pymunk.pygame_util.DrawOptions(screen)
 
 space = pymunk.Space()
