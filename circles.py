@@ -88,7 +88,7 @@ class Rectangle:
 running = True
 clock = pygame.time.Clock()
 
-platelets = Rectangle(box_width, box_height)
+platelets = Rectangle(box_width, box_height, width_gen, ar_gen)
 
 while running:
     for event in pygame.event.get():
@@ -96,18 +96,17 @@ while running:
             running = False
             
     screen.fill((255, 255, 255))
-    space.debug_draw(draw_options)
+
+    if random.random() < 0.01:
+        platelets.create()
+
+    for body in space.bodies:
+        for shape in body.shapes:
+            pygame.draw.polygon(screen, (0, 0, 0), shape.get_vertices())
+    
     pygame.display.flip()
     space.step(dt)
-    clock.tick(60)
-    
-    if random.random() < 0.1:
-        width = width_gen.generate()
-        height = width / ar_gen.generate()
-        mass = 1
-        x = random.randint(0, box_width)
-        y = box_height
-        rect = Rectangle(box_width, box_height)
-        rect.create(x, y, width, height, mass)
-        rect.draw()
+    clock.tick(1/dt) # keep realtime
+
+pygame.quit()
         
