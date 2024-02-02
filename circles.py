@@ -143,7 +143,11 @@ class Circle:
 running = True
 clock = pygame.time.Clock()
 
-platelets = Rectangle(box_width, box_height, width_gen, ar_gen)
+# platelets = Rectangle(box_width, box_height, width_gen, ar_gen)
+
+radius_gen = Distribution(10, 5)
+platelets = Circle(box_width, box_height, radius_gen)
+
 total_area = 0
 elapsed_time = 0
 
