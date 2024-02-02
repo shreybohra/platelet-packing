@@ -102,6 +102,41 @@ class Rectangle:
 
     def get_area(self):
         return self.area
+    
+# create a class to generate circles
+class Circle:
+    def __init__(self, box_width, box_height, radius_gen):
+        self.box_width = box_width
+        self.box_height = box_height
+        self.radius_gen = radius_gen
+        self.density = 1
+        self.elasticity = 0.4
+        self.friction = 0.5
+
+    def create(self):
+        # platelet parameters
+        # bodge to make sure always positive and non-zero
+        radius = abs(self.radius_gen.generate()) + 1
+        self.area = math.pi * radius**2
+        mass = self.area * self.density
+
+        # initial position and angle
+        self.y = box_height + 100
+        self.x = random.uniform(0, self.box_width - radius) + 100  # Ensure it fits within the box
+
+        # create the platelet
+        self.body = pymunk.Body(mass, pymunk.moment_for_circle(mass, 0, radius))
+        self.body.position = self.x, self.y
+        self.shape = pymunk.Circle(self.body, radius)
+        self.shape.elasticity = self.elasticity
+        self.shape.friction = self.friction
+        space.add(self.body, self.shape)
+        
+    def draw(self):
+        pygame.draw.circle(screen, (0, 0, 0), (int(self.body.position.x), int(self.body.position.y)), int(self.shape.radius))
+
+    def get_area(self):
+        return self.area
 
 # game loop
         
