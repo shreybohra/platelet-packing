@@ -18,6 +18,9 @@ ar_std = 2
 screen_width = box_width + 200
 screen_height = box_height*2
 
+wall_elasticity = 0.4
+wall_friction = 0.5
+
 class Distribution:
     def __init__(self, mean, std):
         self.mean = mean
@@ -35,6 +38,8 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pymunk.pygame_util.positive_y_is_up = True
 draw_options = pymunk.pygame_util.DrawOptions(screen)
 
+font = pygame.font.Font(None, 36)
+
 space = pymunk.Space()
 space.gravity = (0, -981)
 
@@ -45,14 +50,14 @@ floor = pymunk.Segment(space.static_body, ((screen_width-box_width)/2, 5), (box_
 left_wall = pymunk.Segment(space.static_body, ((screen_width-box_width)/2 + 5, 5), ((screen_width-box_width)/2 + 5, box_height), 5)
 right_wall = pymunk.Segment(space.static_body, (box_width + (screen_width-box_width)/2 - 5, 5), (box_width + (screen_width-box_width)/2 - 5, box_height), 5)
 
-floor.elasticity = 0.95
-floor.friction = 0.5
+floor.elasticity = wall_elasticity
+floor.friction = wall_friction
 
-left_wall.elasticity = 0.95
-left_wall.friction = 0.5
+left_wall.elasticity = wall_elasticity
+left_wall.friction = wall_friction
 
-right_wall.elasticity = 0.95
-right_wall.friction = 0.5
+right_wall.elasticity = wall_elasticity
+right_wall.friction = wall_friction
 
 space.add(floor, left_wall, right_wall)
 
@@ -65,14 +70,17 @@ class Rectangle:
         self.box_height = box_height
         self.width_gen = width_gen
         self.ar_gen = ar_gen
-        self.density = 1     
+        self.density = 1
+        self.elasticity = 0.4
+        self.friction = 0.5     
  
     def create(self):
         # platelet parameters
         # bodge to make sure always positive and non-zero
         width = abs(self.width_gen.generate()) + 1
         height = abs(width * self.ar_gen.generate()) + 1
-        mass = width * height * self.density
+        self.area = width * height
+        mass = self.area * self.density
 
         # initial position and angle
         self.y = box_height + 100
@@ -84,12 +92,16 @@ class Rectangle:
         self.body.position = self.x, self.y
         self.body.angle = angle
         self.shape = pymunk.Poly.create_box(self.body, (width, height))
-        self.shape.elasticity = 0.95
-        self.shape.friction = 0.9
+        self.shape.elasticity = self.elasticity
+        self.shape.friction = self.friction
         space.add(self.body, self.shape)
+        
 
     def draw(self):
         pygame.draw.polygon(screen, (0, 0, 0), self.shape.get_vertices())
+
+    def get_area(self):
+        return self.area
 
 # game loop
         
@@ -97,6 +109,7 @@ running = True
 clock = pygame.time.Clock()
 
 platelets = Rectangle(box_width, box_height, width_gen, ar_gen)
+total_area = 0
 
 while running:
     for event in pygame.event.get():
@@ -107,6 +120,7 @@ while running:
 
     if random.random() < 0.02:
         platelets.create()
+        total_area += platelets.get_area()
 
     space.debug_draw(draw_options)
     
