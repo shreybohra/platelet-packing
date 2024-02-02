@@ -38,8 +38,8 @@ space.gravity = (0, -981)
 #%%
 
 floor = pymunk.Segment(space.static_body, (0, 5), (box_width, 5), 5)
-left_wall = pymunk.Segment(space.static_body, (0, 5), (0, box_height), 5)
-right_wall = pymunk.Segment(space.static_body, (box_width, 5), (box_width, box_height), 5)
+left_wall = pymunk.Segment(space.static_body, (5, 5), (5, box_height), 5)
+right_wall = pymunk.Segment(space.static_body, (box_width - 5, 5), (box_width - 5, box_height), 5)
 
 floor.elasticity = 0.95
 floor.friction = 0.5
@@ -105,9 +105,7 @@ while running:
     if random.random() < 0.01:
         platelets.create()
 
-    for body in space.bodies:
-        for shape in body.shapes:
-            pygame.draw.polygon(screen, (0, 0, 0), shape.get_vertices())
+    space.debug_draw(draw_options)
     
     pygame.display.flip()
     space.step(dt)
