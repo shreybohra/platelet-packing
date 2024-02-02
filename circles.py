@@ -63,15 +63,20 @@ class Rectangle:
         self.ar_gen = ar_gen
         self.density = 1       
         
-        self.y = box_height + 100
-        self.x = random.uniform(0, self.box_width - width)  # Ensure it fits within the box
+        
 
     def create(self):
+        # platelet parameters
         width = self.width_gen.generate()
         height = width * self.ar_gen.generate()
         mass = width * height * self.density
+
+        # initial position and angle
+        self.y = box_height + 100
+        self.x = random.uniform(0, self.box_width - width)  # Ensure it fits within the box
         angle = random.uniform(-0.5*math.pi, 0.5*math.pi)
 
+        # create the platelet
         self.body = pymunk.Body(mass, pymunk.moment_for_box(mass, width, height))
         self.body.position = self.x, self.y
         self.body.angle = angle
