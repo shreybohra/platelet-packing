@@ -77,7 +77,7 @@ class Rectangle:
         angle = random.uniform(-0.5*math.pi, 0.5*math.pi)
 
         # create the platelet
-        self.body = pymunk.Body(mass, pymunk.moment_for_box(mass, width, height))
+        self.body = pymunk.Body(mass, pymunk.moment_for_box(mass, (width, height)))
         self.body.position = self.x, self.y
         self.body.angle = angle
         self.shape = pymunk.Poly.create_box(self.body, (width, height))
