@@ -41,8 +41,8 @@ p.setTimeStep(1/fps)
 
 # start_pos/Ornp.resetBasePositionAndOrientation(boxId, startPos, startOrientation)
 
-# create an empty container
-container_size = [2000, 1000, 500]*0.5
+# create an empty container - this is half dims
+container_size = [1000, 500, 250]
 
 # create the container
 container_id = p.createCollisionShape(p.GEOM_BOX,halfExtents=container_size)
