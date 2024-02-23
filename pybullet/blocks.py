@@ -112,15 +112,16 @@ def check_movement(existing_platelets, threshold=0.1):
 
 existing_platelets = []
 
-def shake(container_body_id, amplitude=2, frequency=20, duration=5):
+def shake(container_body_id, amplitude=0.2, frequency=5, duration=5):
     
     start_time = time.time()
     end_time = start_time + duration
 
     while time.time() < end_time:
         t = time.time() - start_time
-        force = [0, 0, amplitude * math.sin(2 * math.pi * frequency * t)] # z axis
-        p.applyExternalForce(container_body_id, -1, force, [0, 0, 0], p.WORLD_FRAME)
+        dz = [0, 0, amplitude * math.sin(2 * math.pi * frequency * t)] # z axis
+        orn = [0, 0, 0, 1]
+        p.resetBasePositionAndOrientation(container_body_id, dz, orn)
 
         p.stepSimulation()
         time.sleep(dt)
