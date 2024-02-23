@@ -35,14 +35,17 @@ p.setGravity(0,0,-9.81)
 planeId = p.loadURDF("plane.urdf")
 start_pos = [0, 0, 0]
 start_orientation = p.getQuaternionFromEuler([0, 0, 0])
+# zoom out
+p.resetDebugVisualizerCamera(cameraDistance=50, cameraYaw=0, cameraPitch=-45, cameraTargetPosition=[0, 0, 0])
 
 fps = 200
-p.setTimeStep(1/fps)
+dt = 1/fps
+p.setTimeStep(dt)
 
 # start_pos/Ornp.resetBasePositionAndOrientation(boxId, startPos, startOrientation)
 
 # create an empty container - this is half dims
-container_size = [10, 5, 0.5]
+container_size = [20, 10, 0.5]
 
 # create the container
 container_id = p.createCollisionShape(p.GEOM_BOX,halfExtents=container_size)
@@ -51,7 +54,7 @@ container_body_id = p.createMultiBody(0, container_id, container_visual_id, [0, 
 
 # Create collision shapes for the container walls
 wall_thickness = 0.1
-wall_height = 3  
+wall_height = 5  
 half_extents_x = (container_size[0] + wall_thickness)
 half_extents_y = (container_size[1] + wall_thickness)
 
@@ -77,7 +80,7 @@ p.createMultiBody(0, bottom_wall_id, basePosition=[0, -container_size[1] - wall_
 def generate_random_position(container_size=container_size):
     x = random.uniform(-container_size[0], container_size[0])
     y = random.uniform(-container_size[1], container_size[1])
-    z = container_size[2] + 10
+    z = container_size[2] + 20
     orientation = p.getQuaternionFromEuler([random.uniform(0, 2 * 3.1416) for _ in range(3)])
     return [x, y, z], orientation
 
@@ -98,9 +101,32 @@ def check_init_collision(platelet_id, existing_platelets):
             return True # collision detected
     return False
 
+def check_movement(existing_platelets, threshold=0.1):
+    
+    linear_velocities = [np.linalg.norm(p.getBaseVelocity(platelet)[0]) for platelet in existing_platelets]
+
+    if any(abs(v) > threshold for v in linear_velocities):
+        return True
+    
+    return False
+
 existing_platelets = []
 
-for _ in range(10):
+def shake(container_body_id, amplitude=2, frequency=20, duration=5):
+    
+    start_time = time.time()
+    end_time = start_time + duration
+
+    while time.time() < end_time:
+        t = time.time() - start_time
+        force = [0, 0, amplitude * math.sin(2 * math.pi * frequency * t)] # z axis
+        p.applyExternalForce(container_body_id, -1, force, [0, 0, 0], p.WORLD_FRAME)
+
+        p.stepSimulation()
+        time.sleep(dt)
+
+print("Creating platelets...")
+for _ in range(50):
     pos, orn = generate_random_position()
     
     platelet_id = create_platelet()
@@ -109,15 +135,19 @@ for _ in range(10):
         pos, orn = generate_random_position()
         p.resetBasePositionAndOrientation(platelet_id, pos, orn)
 
-    for _ in range(100):
+    for _ in range(10):
         p.stepSimulation()
-        time.sleep(1/fps)
+        time.sleep(dt)
         
     existing_platelets.append(platelet_id)
 
-for _ in range(1000):
-    p.stepSimulation()
-    time.sleep(1/fps)
+print("Settling...")
+while check_movement(existing_platelets):
+    for _ in range(10):
+        p.stepSimulation()
+        time.sleep(dt)
+print("Shaking...")
+shake(container_body_id)
     
 simend = input("Continue?")
 
