@@ -35,10 +35,14 @@ p.setGravity(0,0,-9.81)
 planeId = p.loadURDF("plane.urdf")
 start_pos = [0, 0, 0]
 start_orientation = p.getQuaternionFromEuler([0, 0, 0])
+
+fps = 200
+p.setTimeStep(1/fps)
+
 # start_pos/Ornp.resetBasePositionAndOrientation(boxId, startPos, startOrientation)
 
 # create an empty container
-container_size = [2000, 1000, 500]/2
+container_size = [2000, 1000, 500]*0.5
 
 # create the container
 container_id = p.createCollisionShape(p.GEOM_BOX,halfExtents=container_size)
