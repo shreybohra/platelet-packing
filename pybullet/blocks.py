@@ -17,11 +17,11 @@ class Distribution:
     def generate(self):
         return random.gauss(self.mean, self.std)
 
-width_mean = 100
-width_std = 10
+width_mean = 1
+width_std = 0.1
 ar_mean = 5
 ar_std = 2
-depth = 30
+depth = 0.3
 density = 1
 
 width_gen = Distribution(width_mean, width_std)
@@ -42,19 +42,42 @@ p.setTimeStep(1/fps)
 # start_pos/Ornp.resetBasePositionAndOrientation(boxId, startPos, startOrientation)
 
 # create an empty container - this is half dims
-container_size = [1000, 500, 250]
+container_size = [10, 5, 0.5]
 
 # create the container
 container_id = p.createCollisionShape(p.GEOM_BOX,halfExtents=container_size)
 container_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=container_size, rgbaColor=[0.8, 0.8, 0.8, 1])
 container_body_id = p.createMultiBody(0, container_id, container_visual_id, [0, 0, 0])
 
+# Create collision shapes for the container walls
+wall_thickness = 0.1
+wall_height = 3  
+half_extents_x = (container_size[0] + wall_thickness)
+half_extents_y = (container_size[1] + wall_thickness)
+
+# Left wall
+left_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height])
+left_wall_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height], rgbaColor=[0.8, 0.8, 0.8, 1])
+# Right wall
+right_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height])
+right_wall_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height], rgbaColor=[0.8, 0.8, 0.8, 1])
+# Top wall
+top_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[half_extents_x, wall_thickness, wall_height])
+top_wall_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[half_extents_x, wall_thickness, wall_height], rgbaColor=[0.8, 0.8, 0.8, 1])
+# Bottom wall
+bottom_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[half_extents_x, wall_thickness, wall_height])
+bottom_wall_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[half_extents_x, wall_thickness, wall_height], rgbaColor=[0.8, 0.8, 0.8, 1])
+# Attach collision shapes to the container body
+p.createMultiBody(0, left_wall_id, basePosition=[-container_size[0] - wall_thickness, 0, wall_height], baseOrientation=[0, 0, 0, 1])
+p.createMultiBody(0, right_wall_id, basePosition=[container_size[0] + wall_thickness, 0, wall_height], baseOrientation=[0, 0, 0, 1])
+p.createMultiBody(0, top_wall_id, basePosition=[0, container_size[1] + wall_thickness, wall_height], baseOrientation=[0, 0, 0, 1])
+p.createMultiBody(0, bottom_wall_id, basePosition=[0, -container_size[1] - wall_thickness, wall_height], baseOrientation=[0, 0, 0, 1])
 #%%
 # initialise platelets
 def generate_random_position(container_size=container_size):
     x = random.uniform(-container_size[0], container_size[0])
     y = random.uniform(-container_size[1], container_size[1])
-    z = container_size[2] + 200
+    z = container_size[2] + 10
     orientation = p.getQuaternionFromEuler([random.uniform(0, 2 * 3.1416) for _ in range(3)])
     return [x, y, z], orientation
 
@@ -70,7 +93,7 @@ def create_platelet():
 
 def check_init_collision(platelet_id, existing_platelets):
     for platelet in existing_platelets:
-        contact_points = p.getClosestPoints(platelet_id, platelet)
+        contact_points = p.getClosestPoints(platelet_id, platelet, distance=0.1)
         if contact_points:
             return True # collision detected
     return False
@@ -88,14 +111,16 @@ for _ in range(10):
 
     for _ in range(100):
         p.stepSimulation()
+        time.sleep(1/fps)
         
     existing_platelets.append(platelet_id)
 
 for _ in range(1000):
     p.stepSimulation()
+    time.sleep(1/fps)
     
-
+simend = input("Continue?")
 
 #%%
 # exit
-p.disconnect()
+# p.disconnect()
