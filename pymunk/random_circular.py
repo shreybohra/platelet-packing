@@ -297,11 +297,12 @@ while running:
 
 pygame.quit()
 
+if sticky:
 # get the total area of the platelets that have settled
-final_area = 0
-for body in space.bodies:
-    if body.body_type == pymunk.Body.STATIC:
-        final_area += math.pi * body.shapes[0].radius**2
+    total_area = 0
+    for body in space.bodies:
+        if body.body_type == pymunk.Body.STATIC:
+            total_area += math.pi * radius**2
         
 print(f"Total area of settled platelets: {final_area:.2f}")
 print(f"Elapsed time: {elapsed_time:.2f}")
