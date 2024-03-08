@@ -106,32 +106,58 @@ class Circle:
     def get_area(self):
         return self.area
 
-sticky = False
-boundaries = {left_wall.body, right_wall.body, floor.body}
-stuck_platelets = set()
+sticky = True
+sticky_bodies = {left_wall.body, right_wall.body, floor.body}
+
 
 def platelet_collision_handler(arbiter, space, data):
     # Get the two colliding shapes
     shape_a, shape_b = arbiter.shapes
     
-    sticky_bodies = boundaries.union(stuck_platelets)
     
     if sticky:
         if shape_a.body in sticky_bodies and shape_b.body not in sticky_bodies:
-            shape_b.body.mass *= 100000
-            shape_b.body.gravity_scale = 100000
-            shape_b.friction = 1e9
-            shape_b.elasticity = 0
-            space.add_post_step_callback(stop_body, None, shape_b.body, shape_b.radius)
-            sticky_bodies.add(shape_b.body)
+            pos = shape_b.body.position
+            rot = shape_b.body.angle
+            shp = shape_b
+
+            space.remove(shape_b.body, shape_b)
+
+            static_body = pymunk.Body(body_type=pymunk.Body.STATIC)
+            static_body.position = pos
+            static_body.angle = rot
+
+            static_shape = shp.copy(body=static_body)
+            static_shape.color = (255, 0, 0, 0)
+
+            static_shape.elasticity = 0
+            static_shape.friction = 1e9
+
+            space.add(static_body, static_shape)
+            sticky_bodies.add(static_body)
+
             return False
+        
         elif shape_b.body in sticky_bodies and shape_a.body not in sticky_bodies:
-            shape_a.body.mass *= 100000
-            shape_a.body.gravity_scale = 100000
-            shape_a.friction = 1e9
-            shape_a.elasticity = 0
-            space.add_post_step_callback(stop_body, None, shape_a.body, shape_a.radius)
-            sticky_bodies.add(shape_a.body)
+            pos = shape_a.body.position
+            rot = shape_a.body.angle
+            shp = shape_a
+
+            space.remove(shape_a.body, shape_a)
+
+            static_body = pymunk.Body(body_type=pymunk.Body.STATIC)
+            static_body.position = pos
+            static_body.angle = rot
+
+            static_shape = shp.copy(body=static_body)
+            static_shape.color = (255, 0, 0, 0)
+
+            static_shape.elasticity = 0
+            static_shape.friction = 1e9
+
+            space.add(static_body, static_shape)
+            sticky_bodies.add(static_body)
+                        
             return False
         
     return True
@@ -197,7 +223,7 @@ inactives = InactiveBodies()
 
 total_area = 0
 elapsed_time = 0
-generation_interval = math.ceil(0.02/dt)
+generation_interval = math.ceil(0.5/dt)
 gen_frame = 1
 
 while running:
@@ -214,9 +240,6 @@ while running:
     else:
         gen_frame += 1
 
-    # if sticky:
-    #     for platelet in stuck_platelets:
-    #         stop_body(space, None, platelet, radius)
 
     space.debug_draw(draw_options)
 
