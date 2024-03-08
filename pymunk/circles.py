@@ -150,6 +150,8 @@ platelets = Rectangle(box_width, box_height, width_gen, ar_gen)
 
 total_area = 0
 elapsed_time = 0
+generation_interval = 0.2//dt
+gen_frame = 0
 
 while running:
     for event in pygame.event.get():
@@ -158,9 +160,12 @@ while running:
             
     screen.fill((255, 255, 255))
 
-    if random.random() < 0.02:
+    if gen_frame % generation_interval == 0:
         platelets.create()
         total_area += platelets.get_area()
+        gen_frame = 0
+    else:
+        gen_frame += 1
 
     space.debug_draw(draw_options)
 
