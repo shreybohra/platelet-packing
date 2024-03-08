@@ -90,7 +90,7 @@ class Circle:
 
         # initial position and angle
         self.y = box_height + radius*2 + 10
-        self.x = random.uniform(radius + 2*wall_width, self.box_width - radius - 2*wall_width)  # Ensure it fits within the box
+        self.x = random.uniform(2*radius + 2*wall_width, self.box_width - 2*radius - 2*wall_width)  # Ensure it fits within the box
 
         # create the platelet
         self.body = pymunk.Body(mass, pymunk.moment_for_circle(mass, 0, radius))
@@ -228,7 +228,7 @@ inactives = InactiveBodies()
 
 total_area = 0
 elapsed_time = 0
-generation_interval = math.ceil(0.2/dt)
+generation_interval = math.ceil(0.05/dt)
 gen_frame = 1
 
 physics = True
@@ -289,14 +289,20 @@ while running:
                     
         if highest > (box_height+radius*2):
             print(f"static body at {body.position.x:.2f}, {body.position.y:.2f}")
-            # time.sleep(5)
+            time.sleep(5)
             running = False
 
     # print(f"current highest: {highest}")
     # print(f"inactives: {inactives.number()}")
 
 pygame.quit()
+
+# get the total area of the platelets that have settled
+final_area = 0
+for body in space.bodies:
+    if body.body_type == pymunk.Body.STATIC:
+        final_area += math.pi * body.shapes[0].radius**2
         
-print(f"Total area: {total_area:.2f}")
+print(f"Total area of settled platelets: {final_area:.2f}")
 print(f"Elapsed time: {elapsed_time:.2f}")
-print(f"Packing density: {total_area/(box_width*box_height):.2f}")
+print(f"Packing density: {final_area/(box_width*box_height):.2f}")
