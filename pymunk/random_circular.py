@@ -99,6 +99,24 @@ class Circle:
     def get_area(self):
         return self.area
 
+sticky = False
+sticky_bodies = [left_wall.body, right_wall.body, floor.body]
+
+def platelet_collision_handler(arbiter, space, data):
+    # Get the two colliding shapes
+    shape_a, shape_b = arbiter.shapes
+
+    if sticky:
+        if shape_a.body in sticky_bodies and shape_b.body not in sticky_bodies:
+            shape_b.body.type = pymunk.Body.STATIC
+            sticky_bodies.append(shape_b.body)
+        elif shape_b.body in sticky_bodies and shape_a.body not in sticky_bodies:
+            shape_a.body.type = pymunk.Body.STATIC
+            sticky_bodies.append(shape_a.body)
+
+space.add_collision_handler(1, 1).post_solve = platelet_collision_handler
+
+
 # game loop
         
 running = True
