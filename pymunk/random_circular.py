@@ -10,13 +10,13 @@ import time
 
 # initial parameters
 dt = 0.05
-box_width = 800
+box_width = 1000
 box_height = 200
 width_mean = 10
 width_std = 5
 ar_mean = 5
 ar_std = 2
-radius = 10
+radius = 5
 
 wall_width = 5
 screen_width = box_width + wall_width
@@ -88,7 +88,7 @@ class Circle:
 
         # initial position and angle
         self.y = box_height + radius*2 + 10
-        self.x = random.uniform(radius + 5, self.box_width - radius - 5)  # Ensure it fits within the box
+        self.x = random.uniform(radius + 2*wall_width, self.box_width - radius - 2*wall_width)  # Ensure it fits within the box
 
         # create the platelet
         self.body = pymunk.Body(mass, pymunk.moment_for_circle(mass, 0, radius))
@@ -173,7 +173,7 @@ def stop_body(space, key, body, radius):
     
 
 if sticky:
-    space.add_collision_handler(0, 0).post_solve = platelet_collision_handler
+    space.add_collision_handler(0, 0).pre_solve = platelet_collision_handler
 
 class InactiveBodies:
     def __init__(self, max_inactive_bodies=50, velocity_threshold=0.1):
@@ -228,6 +228,7 @@ total_area = 0
 elapsed_time = 0
 generation_interval = math.ceil(0.2/dt)
 gen_frame = 1
+
 
 while running:
     for event in pygame.event.get():
