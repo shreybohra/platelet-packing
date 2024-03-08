@@ -120,6 +120,7 @@ def platelet_collision_handler(arbiter, space, data):
             pos = shape_b.body.position
             rot = shape_b.body.angle
             shp = shape_b
+            radius = shp.radius
 
             space.remove(shape_b.body, shape_b)
 
@@ -127,7 +128,7 @@ def platelet_collision_handler(arbiter, space, data):
             static_body.position = pos
             static_body.angle = rot
 
-            static_shape = shp.copy(body=static_body)
+            static_shape = pymunk.Circle(static_body, radius)
             static_shape.color = (255, 0, 0, 0)
 
             static_shape.elasticity = 0
@@ -142,6 +143,7 @@ def platelet_collision_handler(arbiter, space, data):
             pos = shape_a.body.position
             rot = shape_a.body.angle
             shp = shape_a
+            radius = shp.radius
 
             space.remove(shape_a.body, shape_a)
 
@@ -149,7 +151,7 @@ def platelet_collision_handler(arbiter, space, data):
             static_body.position = pos
             static_body.angle = rot
 
-            static_shape = shp.copy(body=static_body)
+            static_shape = pymunk.Circle(static_body, radius)
             static_shape.color = (255, 0, 0, 0)
 
             static_shape.elasticity = 0
@@ -223,7 +225,7 @@ inactives = InactiveBodies()
 
 total_area = 0
 elapsed_time = 0
-generation_interval = math.ceil(0.5/dt)
+generation_interval = math.ceil(0.02/dt)
 gen_frame = 1
 
 while running:
