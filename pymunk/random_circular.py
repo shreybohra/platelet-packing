@@ -107,24 +107,32 @@ def platelet_collision_handler(arbiter, space, data):
     # Get the two colliding shapes
     shape_a, shape_b = arbiter.shapes
 
-    print("Collision Handler Called")
-    print("Body A Type:", shape_a.body.body_type)
-    print("Body B Type:", shape_b.body.body_type)
+    # print("Collision Handler Called")
+    # print("Body A Type:", shape_a.body.body_type)
+    # print("Body B Type:", shape_b.body.body_type)
 
     if sticky:
         if shape_a.body in sticky_bodies and shape_b.body not in sticky_bodies:
-            shape_b.body.body_type = pymunk.Body.STATIC
+            # shape_b.body.velocity = (0, 0)
+            # shape_b.body.position = (shape_b.body.position.x, shape_b.body.position.y + 50)
+            space.add_post_step_callback(set_body_static, None, shape_b.body)
             sticky_bodies.add(shape_b.body)
             return False
         elif shape_b.body in sticky_bodies and shape_a.body not in sticky_bodies:
-            shape_a.body.body_type = pymunk.Body.STATIC
+            # shape_a.body.velocity = (0, 0)
+            # shape_a.body.position = (shape_a.body.position.x, shape_a.body.position.y + 50)
+            space.add_post_step_callback(set_body_static, None, shape_a.body)
             sticky_bodies.add(shape_a.body)
             return False
         
     return True
 
+def set_body_static(space, key, body):
+    body.velocity = (0, 0)
+    body.body_type = pymunk.Body.STATIC
 
-space.add_collision_handler(0, 0).pre_solve = platelet_collision_handler
+
+space.add_collision_handler(0, 0).begin = platelet_collision_handler
 
 
 # game loop
@@ -132,13 +140,13 @@ space.add_collision_handler(0, 0).pre_solve = platelet_collision_handler
 running = True
 clock = pygame.time.Clock()
 
-radius_gen = Distribution(3, 0)
+radius_gen = Distribution(10, 0)
 platelets = Circle(box_width, box_height, radius_gen)
 
 total_area = 0
 elapsed_time = 0
-generation_interval = 5//dt
-gen_frame = 0
+generation_interval = 1//dt
+gen_frame = 1
 
 while running:
     for event in pygame.event.get():
@@ -150,7 +158,7 @@ while running:
     if gen_frame % generation_interval == 0:
         platelets.create()
         total_area += platelets.get_area()
-        gen_frame = 0
+        gen_frame = 1
     else:
         gen_frame += 1
 
