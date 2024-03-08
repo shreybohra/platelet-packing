@@ -6,6 +6,7 @@ import pymunk.pygame_util
 import random
 import math
 import collections
+import time
 
 # initial parameters
 dt = 0.05
@@ -172,10 +173,10 @@ def stop_body(space, key, body, radius):
     
 
 if sticky:
-    space.add_collision_handler(0, 0).pre_solve = platelet_collision_handler
+    space.add_collision_handler(0, 0).post_solve = platelet_collision_handler
 
 class InactiveBodies:
-    def __init__(self, max_inactive_bodies=50, velocity_threshold=0.5):
+    def __init__(self, max_inactive_bodies=50, velocity_threshold=0.1):
         self.bodies = collections.deque(maxlen=max_inactive_bodies)
         self.velocity_threshold = velocity_threshold
 
@@ -225,7 +226,7 @@ inactives = InactiveBodies()
 
 total_area = 0
 elapsed_time = 0
-generation_interval = math.ceil(0.02/dt)
+generation_interval = math.ceil(0.2/dt)
 gen_frame = 1
 
 while running:
@@ -256,11 +257,24 @@ while running:
     space.step(dt)
     clock.tick(1/dt) # keep realtime
 
-    inactives.update(space)
-    highest = inactives.highest()
+    if not sticky:
+        inactives.update(space)
+        highest = inactives.highest()
 
-    if highest > box_height:
-        running = False
+        if highest > box_height:
+            running = False
+
+    else:
+        highest = 0
+        for body in space.bodies:
+            if body.position.y > highest:
+                if body.body_type == pymunk.Body.STATIC:
+                    highest = body.position.y
+                    
+        if highest > (box_height+radius*2):
+            print(f"static body at {body.position.x:.2f}, {body.position.y:.2f}")
+            # time.sleep(5)
+            running = False
 
     # print(f"current highest: {highest}")
     # print(f"inactives: {inactives.number()}")
