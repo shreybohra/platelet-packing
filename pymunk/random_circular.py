@@ -147,7 +147,7 @@ if sticky:
     space.add_collision_handler(0, 0).pre_solve = platelet_collision_handler
 
 class InactiveBodies:
-    def __init__(self, max_inactive_bodies=10, velocity_threshold=0.5):
+    def __init__(self, max_inactive_bodies=50, velocity_threshold=0.5):
         self.bodies = collections.deque(maxlen=max_inactive_bodies)
         self.velocity_threshold = velocity_threshold
 
@@ -156,28 +156,24 @@ class InactiveBodies:
             return True
         return False
 
-    def check_settled(self, body):
+    def check_settled(self, body): # check if the body is touching another body - indicates its settled
         for shape in body.shapes:
-            contacts = shape.contact_list
+            if shape.body != body and pymunk.ShapeFilter().should_collide(shape.filter, body.filter):
+                return True
+        return False            
             
-            for contact in contacts:
-                other_shape = contact.shape
-
-                if other_shape.body != body:
-                    return True
-                
-        return False
+    
+    def add(self, body):
+        self.bodies.append(body)
     
     def update(self, space):
         for body in space.bodies:
             if body not in self.bodies:
-                if check_settled(body):
+                if self.check_stopped(body):
+                    # if self.check_settled(body):
                     self.add(body)
 
-        
-    def add(self, body):
-        self.bodies.append(body)
-    
+
 
     def highest(self):
         highest = 1
@@ -185,6 +181,9 @@ class InactiveBodies:
             if body.position.y > highest:
                 highest = body.position.y
         return highest
+    
+    def number(self):
+        return len(self.bodies)
         
 
 # game loop
@@ -194,6 +193,7 @@ clock = pygame.time.Clock()
 
 radius_gen = Distribution(radius, 0)
 platelets = Circle(box_width, box_height, radius_gen)
+inactives = InactiveBodies()
 
 total_area = 0
 elapsed_time = 0
@@ -231,10 +231,14 @@ while running:
     space.step(dt)
     clock.tick(1/dt) # keep realtime
 
-    highest = get_highest(platelets.recents)
+    inactives.update(space)
+    highest = inactives.highest()
 
     if highest > box_height:
         running = False
+
+    # print(f"current highest: {highest}")
+    # print(f"inactives: {inactives.number()}")
 
 pygame.quit()
         
