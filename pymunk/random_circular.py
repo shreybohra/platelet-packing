@@ -9,14 +9,14 @@ import collections
 import time
 
 # initial parameters
-dt = 0.05
-box_width = 1000
-box_height = 200
+dt = 0.005
+box_width = 1500
+box_height = 400
 width_mean = 10
 width_std = 5
 ar_mean = 5
 ar_std = 2
-radius = 5
+radius = 8
 
 wall_width = 5
 screen_width = box_width + wall_width
@@ -45,8 +45,10 @@ draw_options = pymunk.pygame_util.DrawOptions(screen)
 font = pygame.font.Font(None, 36)
 
 space = pymunk.Space()
-# space.gravity = (0, -981)
-space.gravity = (0, -100)
+# IMPORTANT note: gravity is in pixels per second squared
+# if dt is too high, the platelets will fall through the floor and physics breaks
+space.gravity = (0, -981)
+# space.gravity = (0, -450)
 
 
 #%%
@@ -229,34 +231,47 @@ elapsed_time = 0
 generation_interval = math.ceil(0.2/dt)
 gen_frame = 1
 
+physics = True
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            physics = not physics
             
     screen.fill((255, 255, 255))
 
-    if gen_frame % generation_interval == 0:
-        platelets.create()
-        total_area += platelets.get_area()
-        gen_frame = 1
-    else:
-        gen_frame += 1
+    if physics:
 
+        if gen_frame % generation_interval == 0:
+            platelets.create()
+            total_area += platelets.get_area()
+            gen_frame = 1
+        else:
+            gen_frame += 1
+
+
+        
+
+    
+        space.step(dt)
+        clock.tick(1/dt) # keep realtime
+
+        elapsed_time += dt
 
     space.debug_draw(draw_options)
 
-    elapsed_time += dt
+        
+        
+    
     time_display = font.render(f"Elapsed time: {elapsed_time:.2f}", True, (0, 0, 0))
     screen.blit(time_display, (100, 10))
 
     area_display = font.render(f"Total area: {total_area:.2f}", True, (0, 0, 0))
     screen.blit(area_display, (100, 50))
-    
+
     pygame.display.flip()
-    space.step(dt)
-    clock.tick(1/dt) # keep realtime
 
     if not sticky:
         inactives.update(space)
