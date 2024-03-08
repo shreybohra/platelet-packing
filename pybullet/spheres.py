@@ -56,3 +56,36 @@ p.createMultiBody(0, top_wall_id, basePosition=[0, container_size[1] + wall_thic
 p.createMultiBody(0, bottom_wall_id, basePosition=[0, -container_size[1] - wall_thickness, wall_height], baseOrientation=[0, 0, 0, 1])
 
 #%%
+def generate_random_position(container_size=container_size):
+    x = random.uniform(-container_size[0], container_size[0])
+    y = random.uniform(-container_size[1], container_size[1])
+    z = container_size[2] + 20
+    orientation = p.getQuaternionFromEuler([random.uniform(0, 2 * 3.1416) for _ in range(3)])
+    return [x, y, z], orientation
+
+def create_sphere(radius, position, orientation):
+
+    density = 1
+    mass = density * (4/3) * math.pi * radius**3    
+    sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=radius)
+    sphere_visual_id = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=[random.uniform(0, 1) for _ in range(3)] + [1])
+    sphere_body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation)
+
+    return sphere_body_id
+
+def check_init_collision(sphere_id, existing_spheres):
+    for sphere in existing_spheres:
+        contact_points = p.getClosestPoints(sphere_id, sphere, distance=0.1)
+        if contact_points:
+            return True # collision detected
+    return False
+
+def check_movement(existing_spheres, threshold=0.1):
+    
+    linear_velocities = [np.linalg.norm(p.getBaseVelocity(sphere)[0]) for sphere in existing_spheres]
+
+    if any(abs(v) > threshold for v in linear_velocities):
+        return True
+    
+    return False
+
