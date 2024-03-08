@@ -57,8 +57,8 @@ p.createMultiBody(0, bottom_wall_id, basePosition=[0, -container_size[1] - wall_
 
 #%%
 def generate_random_position(container_size=container_size):
-    x = random.uniform(-container_size[0], container_size[0])
-    y = random.uniform(-container_size[1], container_size[1])
+    x = random.uniform(-container_size[0]+1, container_size[0]-1)
+    y = random.uniform(-container_size[1]+1, container_size[1]-1)
     z = container_size[2] + 20
     orientation = p.getQuaternionFromEuler([random.uniform(0, 2 * 3.1416) for _ in range(3)])
     return [x, y, z], orientation
@@ -89,17 +89,18 @@ def check_movement(existing_spheres, threshold=0.1):
     
     return False
 
-def check_settled(sphere_id, existing_spheres, threshold=1):
+def check_settled(sphere_id, existing_spheres, threshold=0.1):
     
-    static = check_movement(existing_spheres, threshold)
+    linear_velocity = np.linalg.norm(p.getBaseVelocity(sphere_id)[0])
+
     touching = check_collision(sphere_id, existing_spheres)
 
-    if static:
+    if linear_velocity < threshold:
         print (f"Sphere {sphere_id} is static")
     if touching:
         print (f"Sphere {sphere_id} is touching")
     
-    if static and touching:
+    if linear_velocity < threshold and touching:
         return True
 
     return False
@@ -149,7 +150,7 @@ while not overflow:
         break
 
 print("Settling...")
-while check_movement(existing_platelets):
+while check_movement(existing_spheres):
     for _ in range(10):
         p.stepSimulation()
         time.sleep(dt)
