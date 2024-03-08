@@ -95,12 +95,12 @@ def check_settled(sphere_id, existing_spheres, threshold=0.1):
 
     touching = check_collision(sphere_id, existing_spheres)
 
-    if linear_velocity < threshold:
-        print (f"Sphere {sphere_id} is static")
+    # if linear_velocity < threshold:
+        # print (f"Sphere {sphere_id} is static")
     if touching:
         print (f"Sphere {sphere_id} is touching")
     
-    if linear_velocity < threshold and touching:
+    if linear_velocity < threshold:
         return True
 
     return False
@@ -141,12 +141,14 @@ while not overflow:
         if sphere not in settled_spheres:
             print(f"Checking sphere {sphere}")
             if check_settled(sphere, settled_spheres):
-                settled_spheres.append(sphere)
+                pos, _ = p.getBasePositionAndOrientation(sphere)
+                if pos[2] <= container_size[2]:
+                    settled_spheres.append(sphere)
 
     print(f"Number of settled spheres: {len(settled_spheres)}")
     overflow = check_overflow(settled_spheres, container_size)
 
-    if len(existing_spheres) > 100:
+    if len(existing_spheres) > 300:
         break
 
 print("Settling...")
