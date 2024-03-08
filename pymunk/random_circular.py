@@ -10,8 +10,8 @@ import time
 
 # initial parameters
 dt = 0.005
-box_width = 1500
-box_height = 400
+box_width = 800
+box_height = 300
 width_mean = 10
 width_std = 5
 ar_mean = 5
@@ -22,7 +22,7 @@ wall_width = 5
 screen_width = box_width + wall_width
 screen_height = box_height*2
 
-wall_elasticity = 0
+wall_elasticity = 0.3
 wall_friction = 100
 
 class Distribution:
@@ -47,8 +47,8 @@ font = pygame.font.Font(None, 36)
 space = pymunk.Space()
 # IMPORTANT note: gravity is in pixels per second squared
 # if dt is too high, the platelets will fall through the floor and physics breaks
-space.gravity = (0, -981)
-# space.gravity = (0, -450)
+# space.gravity = (0, -981)
+space.gravity = (0, -250)
 
 
 #%%
@@ -77,8 +77,8 @@ class Circle:
         self.box_height = box_height
         self.radius_gen = radius_gen
         self.density = 1
-        self.elasticity = 0
-        self.friction = 100
+        self.elasticity = 0.3
+        self.friction = 1
         
 
     def create(self):
@@ -89,7 +89,7 @@ class Circle:
         mass = self.area * self.density
 
         # initial position and angle
-        self.y = box_height + radius*2 + 10
+        self.y = box_height + radius*2 + 50
         self.x = random.uniform(2*radius + 2*wall_width, self.box_width - 2*radius - 2*wall_width)  # Ensure it fits within the box
 
         # create the platelet
@@ -228,7 +228,7 @@ inactives = InactiveBodies()
 
 total_area = 0
 elapsed_time = 0
-generation_interval = math.ceil(0.05/dt)
+generation_interval = math.ceil(0.02/dt)
 gen_frame = 1
 
 physics = True
@@ -279,6 +279,7 @@ while running:
 
         if highest > box_height:
             running = False
+            time.sleep(5)
 
     else:
         highest = 0
@@ -304,6 +305,6 @@ if sticky:
         if body.body_type == pymunk.Body.STATIC:
             total_area += math.pi * radius**2
         
-print(f"Total area of settled platelets: {final_area:.2f}")
+print(f"Total area of settled platelets: {total_area:.2f}")
 print(f"Elapsed time: {elapsed_time:.2f}")
-print(f"Packing density: {final_area/(box_width*box_height):.2f}")
+print(f"Packing density: {total_area/(box_width*box_height):.2f}")
