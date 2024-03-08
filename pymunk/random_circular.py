@@ -88,6 +88,7 @@ class Circle:
         # create the platelet
         self.body = pymunk.Body(mass, pymunk.moment_for_circle(mass, 0, radius))
         self.body.position = self.x, self.y
+        self.body.type = pymunk.Body.DYNAMIC
         self.shape = pymunk.Circle(self.body, radius)
         self.shape.elasticity = self.elasticity
         self.shape.friction = self.friction
@@ -99,22 +100,31 @@ class Circle:
     def get_area(self):
         return self.area
 
-sticky = False
-sticky_bodies = [left_wall.body, right_wall.body, floor.body]
+sticky = True
+sticky_bodies = {left_wall.body, right_wall.body, floor.body}
 
 def platelet_collision_handler(arbiter, space, data):
     # Get the two colliding shapes
     shape_a, shape_b = arbiter.shapes
 
+    print("Collision Handler Called")
+    print("Body A Type:", shape_a.body.body_type)
+    print("Body B Type:", shape_b.body.body_type)
+
     if sticky:
         if shape_a.body in sticky_bodies and shape_b.body not in sticky_bodies:
-            shape_b.body.type = pymunk.Body.STATIC
-            sticky_bodies.append(shape_b.body)
+            shape_b.body.body_type = pymunk.Body.STATIC
+            sticky_bodies.add(shape_b.body)
+            return False
         elif shape_b.body in sticky_bodies and shape_a.body not in sticky_bodies:
-            shape_a.body.type = pymunk.Body.STATIC
-            sticky_bodies.append(shape_a.body)
+            shape_a.body.body_type = pymunk.Body.STATIC
+            sticky_bodies.add(shape_a.body)
+            return False
+        
+    return True
 
-space.add_collision_handler(1, 1).post_solve = platelet_collision_handler
+
+space.add_collision_handler(0, 0).pre_solve = platelet_collision_handler
 
 
 # game loop
@@ -127,7 +137,7 @@ platelets = Circle(box_width, box_height, radius_gen)
 
 total_area = 0
 elapsed_time = 0
-generation_interval = 0.5//dt
+generation_interval = 5//dt
 gen_frame = 0
 
 while running:
