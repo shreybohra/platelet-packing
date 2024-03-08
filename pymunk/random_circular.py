@@ -76,7 +76,7 @@ class Circle:
         self.density = 1
         self.elasticity = 0
         self.friction = 100
-        self.recents = collections.deque(maxlen=100)
+        
 
     def create(self):
         # platelet parameters
@@ -97,7 +97,7 @@ class Circle:
         self.shape.elasticity = self.elasticity
         self.shape.friction = self.friction
         space.add(self.body, self.shape)
-        self.recents.append(self.body)
+        
         # self.body.gravity_scale = 0.2
         
     def draw(self):
@@ -146,12 +146,47 @@ def stop_body(space, key, body, radius):
 if sticky:
     space.add_collision_handler(0, 0).pre_solve = platelet_collision_handler
 
-def get_highest(recents):
-    highest = 1
-    for platelet in recents:
-        if platelet.position.y > highest:
-            highest = platelet.position.y
-    return highest
+class InactiveBodies:
+    def __init__(self, max_inactive_bodies=10, velocity_threshold=0.5):
+        self.bodies = collections.deque(maxlen=max_inactive_bodies)
+        self.velocity_threshold = velocity_threshold
+
+    def check_stopped(self, body):
+        if abs(body.velocity.y) < self.velocity_threshold:
+            return True
+        return False
+
+    def check_settled(self, body):
+        for shape in body.shapes:
+            contacts = shape.contact_list
+            
+            for contact in contacts:
+                other_shape = contact.shape
+
+                if other_shape.body != body:
+                    return True
+                
+        return False
+    
+    def update(self, space):
+        for body in space.bodies:
+            if body not in self.bodies:
+                if check_settled(body):
+                    self.add(body)
+
+        
+    def add(self, body):
+        self.bodies.append(body)
+    
+
+    def highest(self):
+        highest = 1
+        for body in self.bodies:
+            if body.position.y > highest:
+                highest = body.position.y
+        return highest
+        
+
 # game loop
         
 running = True
