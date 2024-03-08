@@ -83,7 +83,7 @@ class Circle:
 
         # initial position and angle
         self.y = box_height + 100
-        self.x = random.uniform(0, self.box_width - radius) + 100  # Ensure it fits within the box
+        self.x = random.uniform(radius + 5, self.box_width - radius - 5)  # Ensure it fits within the box
 
         # create the platelet
         self.body = pymunk.Body(mass, pymunk.moment_for_circle(mass, 0, radius))
