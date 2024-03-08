@@ -73,7 +73,7 @@ def create_sphere(radius, position, orientation):
 
     return sphere_body_id
 
-def check_init_collision(sphere_id, existing_spheres):
+def check_collision(sphere_id, existing_spheres):
     for sphere in existing_spheres:
         contact_points = p.getClosestPoints(sphere_id, sphere, distance=0.1)
         if contact_points:
@@ -89,9 +89,21 @@ def check_movement(existing_spheres, threshold=0.1):
     
     return False
 
+def check_settled(sphere_id, existing_spheres, threshold=0.1):
+    
+    static = check_movement(existing_spheres, threshold)
+    touching = check_collision(sphere_id, existing_spheres)
+
+    if static and touching:
+        return True
+
+    return False
+
+    
+
 existing_spheres = []
 
-radius = 0.5
+radius = 1
 total_vol = 0
 
 print("Creating spheres...")
@@ -101,7 +113,7 @@ for _ in range(500):
     platelet_id = create_sphere(radius, pos, orn)
     total_vol += (4/3) * math.pi * radius**3
 
-    while check_init_collision(platelet_id, existing_spheres):
+    while check_collision(platelet_id, existing_spheres):
         pos, orn = generate_random_position()
         p.resetBasePositionAndOrientation(platelet_id, pos, orn)
 
@@ -111,6 +123,7 @@ for _ in range(500):
         
     existing_spheres.append(platelet_id)
 
-simend = input("Continue?")
 print(f"Total volume of spheres: {total_vol} m^3")
 print(f"Volume fraction: {total_vol/(container_size[0]*container_size[1]*container_size[2])}")
+
+simend = input("Continue?")
