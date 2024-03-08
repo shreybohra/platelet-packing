@@ -15,7 +15,7 @@ planeId = p.loadURDF("plane.urdf")
 start_pos = [0, 0, 0]
 start_orientation = p.getQuaternionFromEuler([0, 0, 0])
 # zoom out
-p.resetDebugVisualizerCamera(cameraDistance=50, cameraYaw=0, cameraPitch=-45, cameraTargetPosition=[0, 0, 0])
+p.resetDebugVisualizerCamera(cameraDistance=50, cameraYaw=0, cameraPitch=-60, cameraTargetPosition=[0, 0, 0])
 
 fps = 200
 dt = 1/fps
@@ -92,12 +92,14 @@ def check_movement(existing_spheres, threshold=0.1):
 existing_spheres = []
 
 radius = 0.5
+total_vol = 0
 
 print("Creating spheres...")
-for _ in range(200):
+for _ in range(500):
     pos, orn = generate_random_position()
     
     platelet_id = create_sphere(radius, pos, orn)
+    total_vol += (4/3) * math.pi * radius**3
 
     while check_init_collision(platelet_id, existing_spheres):
         pos, orn = generate_random_position()
@@ -110,3 +112,5 @@ for _ in range(200):
     existing_spheres.append(platelet_id)
 
 simend = input("Continue?")
+print(f"Total volume of spheres: {total_vol} m^3")
+print(f"Volume fraction: {total_vol/(container_size[0]*container_size[1]*container_size[2])}")
