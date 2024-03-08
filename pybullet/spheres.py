@@ -91,10 +91,10 @@ def check_movement(existing_spheres, threshold=0.1):
 
 existing_spheres = []
 
-radius = 0.2
+radius = 0.5
 
 print("Creating spheres...")
-for _ in range(50):
+for _ in range(200):
     pos, orn = generate_random_position()
     
     platelet_id = create_sphere(radius, pos, orn)
@@ -108,3 +108,5 @@ for _ in range(50):
         time.sleep(dt)
         
     existing_spheres.append(platelet_id)
+
+simend = input("Continue?")
