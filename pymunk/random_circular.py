@@ -5,22 +5,24 @@ import pymunk
 import pymunk.pygame_util
 import random
 import math
+import collections
 
 # initial parameters
 dt = 0.05
-box_width = 600
+box_width = 800
 box_height = 200
 width_mean = 10
 width_std = 5
 ar_mean = 5
 ar_std = 2
+radius = 10
 
 wall_width = 5
 screen_width = box_width + wall_width
 screen_height = box_height*2
 
-wall_elasticity = 0.4
-wall_friction = 0.5
+wall_elasticity = 0
+wall_friction = 100
 
 class Distribution:
     def __init__(self, mean, std):
@@ -42,7 +44,8 @@ draw_options = pymunk.pygame_util.DrawOptions(screen)
 font = pygame.font.Font(None, 36)
 
 space = pymunk.Space()
-space.gravity = (0, -981)
+# space.gravity = (0, -981)
+space.gravity = (0, -100)
 
 
 #%%
@@ -71,8 +74,9 @@ class Circle:
         self.box_height = box_height
         self.radius_gen = radius_gen
         self.density = 1
-        self.elasticity = 0.4
-        self.friction = 0.5
+        self.elasticity = 0
+        self.friction = 100
+        self.recents = collections.deque(maxlen=100)
 
     def create(self):
         # platelet parameters
@@ -82,7 +86,7 @@ class Circle:
         mass = self.area * self.density
 
         # initial position and angle
-        self.y = box_height + 100
+        self.y = box_height + radius*2 + 10
         self.x = random.uniform(radius + 5, self.box_width - radius - 5)  # Ensure it fits within the box
 
         # create the platelet
@@ -93,6 +97,8 @@ class Circle:
         self.shape.elasticity = self.elasticity
         self.shape.friction = self.friction
         space.add(self.body, self.shape)
+        self.recents.append(self.body)
+        # self.body.gravity_scale = 0.2
         
     def draw(self):
         pygame.draw.circle(screen, (0, 0, 0), (int(self.body.position.x), int(self.body.position.y)), int(self.shape.radius))
@@ -100,54 +106,63 @@ class Circle:
     def get_area(self):
         return self.area
 
-sticky = True
-sticky_bodies = {left_wall.body, right_wall.body, floor.body}
+sticky = False
+boundaries = {left_wall.body, right_wall.body, floor.body}
+stuck_platelets = set()
 
 def platelet_collision_handler(arbiter, space, data):
     # Get the two colliding shapes
     shape_a, shape_b = arbiter.shapes
-
-    # print("Collision Handler Called")
-    # print("Body A Type:", shape_a.body.body_type)
-    # print("Body B Type:", shape_b.body.body_type)
-
+    
+    sticky_bodies = boundaries.union(stuck_platelets)
+    
     if sticky:
         if shape_a.body in sticky_bodies and shape_b.body not in sticky_bodies:
-            # shape_b.body.velocity = (0, 0)
-            # shape_b.body.position = (shape_b.body.position.x, shape_b.body.position.y + 50)
-            space.add_post_step_callback(set_body_static, None, (shape_b.body, shape_b.radius))
+            shape_b.body.mass *= 100000
+            shape_b.body.gravity_scale = 100000
+            shape_b.friction = 1e9
+            shape_b.elasticity = 0
+            space.add_post_step_callback(stop_body, None, shape_b.body, shape_b.radius)
             sticky_bodies.add(shape_b.body)
             return False
         elif shape_b.body in sticky_bodies and shape_a.body not in sticky_bodies:
-            # shape_a.body.velocity = (0, 0)
-            # shape_a.body.position = (shape_a.body.position.x, shape_a.body.position.y + 50)
-            space.add_post_step_callback(set_body_static, None, (shape_a.body, shape_a.radius))
+            shape_a.body.mass *= 100000
+            shape_a.body.gravity_scale = 100000
+            shape_a.friction = 1e9
+            shape_a.elasticity = 0
+            space.add_post_step_callback(stop_body, None, shape_a.body, shape_a.radius)
             sticky_bodies.add(shape_a.body)
             return False
         
     return True
 
-def set_body_static(space, key, data):
-    body, radius = data
+def stop_body(space, key, body, radius):
     body.velocity = (0, 0)
-    body.position = (body.position.x, body.position.y + 2*radius)
-    body.body_type = pymunk.Body.STATIC
+    body.angular_velocity = 0
+    body.rotation = 0
+    body.position = (body.position.x, body.position.y + radius)
+    
 
+if sticky:
+    space.add_collision_handler(0, 0).pre_solve = platelet_collision_handler
 
-space.add_collision_handler(0, 0).post_solve = platelet_collision_handler
-
-
+def get_highest(recents):
+    highest = 1
+    for platelet in recents:
+        if platelet.position.y > highest:
+            highest = platelet.position.y
+    return highest
 # game loop
         
 running = True
 clock = pygame.time.Clock()
 
-radius_gen = Distribution(10, 0)
+radius_gen = Distribution(radius, 0)
 platelets = Circle(box_width, box_height, radius_gen)
 
 total_area = 0
 elapsed_time = 0
-generation_interval = 1//dt
+generation_interval = math.ceil(0.02/dt)
 gen_frame = 1
 
 while running:
@@ -164,6 +179,10 @@ while running:
     else:
         gen_frame += 1
 
+    # if sticky:
+    #     for platelet in stuck_platelets:
+    #         stop_body(space, None, platelet, radius)
+
     space.debug_draw(draw_options)
 
     elapsed_time += dt
@@ -177,5 +196,13 @@ while running:
     space.step(dt)
     clock.tick(1/dt) # keep realtime
 
+    highest = get_highest(platelets.recents)
+
+    if highest > box_height:
+        running = False
+
 pygame.quit()
         
+print(f"Total area: {total_area:.2f}")
+print(f"Elapsed time: {elapsed_time:.2f}")
+print(f"Packing density: {total_area/(box_width*box_height):.2f}")
