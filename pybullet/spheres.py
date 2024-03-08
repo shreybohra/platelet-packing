@@ -89,3 +89,22 @@ def check_movement(existing_spheres, threshold=0.1):
     
     return False
 
+existing_spheres = []
+
+radius = 0.2
+
+print("Creating spheres...")
+for _ in range(50):
+    pos, orn = generate_random_position()
+    
+    platelet_id = create_sphere(radius, pos, orn)
+
+    while check_init_collision(platelet_id, existing_spheres):
+        pos, orn = generate_random_position()
+        p.resetBasePositionAndOrientation(platelet_id, pos, orn)
+
+    for _ in range(10):
+        p.stepSimulation()
+        time.sleep(dt)
+        
+    existing_spheres.append(platelet_id)
