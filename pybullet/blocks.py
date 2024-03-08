@@ -112,7 +112,7 @@ def check_movement(existing_platelets, threshold=0.1):
 
 existing_platelets = []
 
-def shake(container_body_id, amplitude=0.2, frequency=5, duration=5):
+def shake(container_body_id, amplitude=0.8, frequency=8, duration=10):
     
     start_time = time.time()
     end_time = start_time + duration
