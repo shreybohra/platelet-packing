@@ -15,7 +15,7 @@ planeId = p.loadURDF("plane.urdf")
 start_pos = [0, 0, 0]
 start_orientation = p.getQuaternionFromEuler([0, 0, 0])
 # zoom out
-p.resetDebugVisualizerCamera(cameraDistance=50, cameraYaw=0, cameraPitch=-60, cameraTargetPosition=[0, 0, 0])
+p.resetDebugVisualizerCamera(cameraDistance=30, cameraYaw=0, cameraPitch=-60, cameraTargetPosition=[0, 0, 0])
 
 fps = 200
 dt = 1/fps
@@ -24,7 +24,7 @@ p.setTimeStep(dt)
 # start_pos/Ornp.resetBasePositionAndOrientation(boxId, startPos, startOrientation)
 
 # create an empty container - this is half dims
-container_size = [20, 10, 0.5]
+container_size = [10, 5, 0.25]
 
 # create the container
 container_id = p.createCollisionShape(p.GEOM_BOX,halfExtents=container_size)
@@ -75,7 +75,7 @@ def create_sphere(radius, position, orientation):
 
 def check_collision(sphere_id, existing_spheres):
     for sphere in existing_spheres:
-        contact_points = p.getClosestPoints(sphere_id, sphere, distance=0.1)
+        contact_points = p.getClosestPoints(sphere_id, sphere, distance=0.5)
         if contact_points:
             return True # collision detected
     return False
@@ -89,25 +89,38 @@ def check_movement(existing_spheres, threshold=0.1):
     
     return False
 
-def check_settled(sphere_id, existing_spheres, threshold=0.1):
+def check_settled(sphere_id, existing_spheres, threshold=1):
     
     static = check_movement(existing_spheres, threshold)
     touching = check_collision(sphere_id, existing_spheres)
 
+    if static:
+        print (f"Sphere {sphere_id} is static")
+    if touching:
+        print (f"Sphere {sphere_id} is touching")
+    
     if static and touching:
         return True
 
     return False
 
-    
+def check_overflow(settled_spheres, container_size):
+
+    for sphere in settled_spheres:
+        pos, _ = p.getBasePositionAndOrientation(sphere)
+        if pos[2] > container_size[2]:
+            return True
+    return False
 
 existing_spheres = []
+settled_spheres = []
+overflow = False
 
 radius = 1
 total_vol = 0
 
 print("Creating spheres...")
-for _ in range(500):
+while not overflow:
     pos, orn = generate_random_position()
     
     platelet_id = create_sphere(radius, pos, orn)
@@ -117,11 +130,29 @@ for _ in range(500):
         pos, orn = generate_random_position()
         p.resetBasePositionAndOrientation(platelet_id, pos, orn)
 
-    for _ in range(10):
+    for _ in range(20):
         p.stepSimulation()
         time.sleep(dt)
         
     existing_spheres.append(platelet_id)
+    
+    for sphere in existing_spheres:
+        if sphere not in settled_spheres:
+            print(f"Checking sphere {sphere}")
+            if check_settled(sphere, settled_spheres):
+                settled_spheres.append(sphere)
+
+    print(f"Number of settled spheres: {len(settled_spheres)}")
+    overflow = check_overflow(settled_spheres, container_size)
+
+    if len(existing_spheres) > 100:
+        break
+
+print("Settling...")
+while check_movement(existing_platelets):
+    for _ in range(10):
+        p.stepSimulation()
+        time.sleep(dt)
 
 print(f"Total volume of spheres: {total_vol} m^3")
 print(f"Volume fraction: {total_vol/(container_size[0]*container_size[1]*container_size[2])}")
