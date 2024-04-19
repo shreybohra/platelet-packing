@@ -68,7 +68,7 @@ def create_sphere(radius, position, orientation):
     density = 1
     mass = density * (4/3) * math.pi * radius**3    
     sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=radius)
-    sphere_visual_id = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=[random.uniform(0, 1) for _ in range(3)] + [1])
+    sphere_visual_id = p.createVisualShape(p.GEOM_SPHERE, radius=radius, rgbaColor=[random.uniform(0.1, 1) for _ in range(3)] + [1])
     sphere_body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation)
 
     return sphere_body_id
@@ -125,7 +125,7 @@ container_vol = container_size[0] * container_size[1] * wall_height * 4 # half e
 
 print("Creating spheres...")
 # while not overflow:
-while generated_vol < container_vol*2: #allow for some extra
+while generated_vol < container_vol*1.5: #allow for some extra
     pos, orn = generate_random_position()
     
     print(f"Generating sphere {len(existing_spheres)+1}")
@@ -179,24 +179,41 @@ def get_sphere_properties(sphere_id):
 def calculate_sphere_volume(radius):
     return (4/3) * math.pi * radius**3
 
-def is_inside_container(pos, radius, container_size):
-    x_check = abs(pos[0]) <= container_size[0]
-    y_check = abs(pos[1]) <= container_size[1]
-    z_check = pos[2] - radius <= container_size[2]
+def is_inside_container_plan(pos, radius, container_size):
+    x_check = abs(pos[0]) <= container_size[0]# - radius
+    y_check = abs(pos[1]) <= container_size[1]# - radius
 
-    return (x_check and y_check and z_check)
+    return (x_check and y_check)
+
+def portion_below_top(pos, radius, container_size):
+
+    if pos[2] - radius < (container_size[2] + wall_height):
+        # entire sphere is above the top
+        return 0
+
+    return 1
+    
+    if pos[2] + radius < (container_size[2] + wall_height):
+        # entire sphere is below the top
+        return 1
+    
+    else:
+        # partially above the top
+        h = pos[2] + radius - (container_size[2] + wall_height)
+        return (1/3) * math.pi * h**2 * (3*radius - h)
 
 inside_vol = 0
 for sphere in existing_spheres:
     # change color to denote it's been filtered
     pos, radius = get_sphere_properties(sphere)
-    if is_inside_container(pos, radius, container_size):
-        p.changeVisualShape(sphere, -1, rgbaColor=[0, 0, 0, 1])
-        inside_vol += calculate_sphere_volume(radius)
+    if is_inside_container_plan(pos, radius, container_size):
+
+        p.changeVisualShape(sphere, -1, rgbaColor=[0, 0, 0, 0.5])
+        inside_vol += calculate_sphere_volume(radius) * portion_below_top(pos, radius, container_size)
 #%%
 print(f"Total volume of spheres: {generated_vol} m^3")
 print(f"Volume of spheres inside container: {inside_vol} m^3")
 print(f"Volume fraction: {inside_vol/(container_vol)}")
-
+#%%
 simend = input("Continue?")
 p.disconnect()
