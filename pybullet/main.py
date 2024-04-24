@@ -15,12 +15,13 @@ import platelets
 print ("Initialising simulation...")
 sim = simulation.BulletSim(gui=True, fps=200)
 
-container_size = [10, 5, 2]
+container_size = [5, 5, 1]
 container_vol = np.prod(container_size)
 
 sim.create_container(container_size)
 sim.set_container_dynamics(friction=0.5, restitution=0.2)
 
+sim.set_zoom(10)
 
 
 #%%
@@ -64,7 +65,7 @@ while generated_vol < container_vol*1.5: #allow for some extra
     
     # decide cube or sphere
     weight = random.uniform(0, 1)
-    if weight > 0:
+    if weight > 0.7:
         print("Generating cuboid")
         body = cuboid
     else:
@@ -73,7 +74,7 @@ while generated_vol < container_vol*1.5: #allow for some extra
 
     new_body = body.create(enforce_collision=True)
     bodies.append(new_body)
-    generated_vol += body.volume()
+    generated_vol += body.volume
 
     sim.step(count=20)
 
