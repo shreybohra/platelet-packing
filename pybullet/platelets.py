@@ -55,16 +55,21 @@ class Sphere(Platelet):
     def get_inertia(self):
         return (2/5) * self.get_mass() * self.radius**2
     
-    def create_sphere(self, position, orientation):
+    def __initialise_sphere(self, position, orientation):
         
         self.radius = self.radius_generator()
-        mass = self.get_mass()
-        inertia = self.get_inertia()
         sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius)
         sphere_visual_id = p.createVisualShape(p.GEOM_SPHERE, radius=self.radius, rgbaColor=[random.uniform(0.1, 1) for _ in range(3)] + [1])
-        sphere_body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
 
-        return sphere_body_id
+
+        return sphere_id, sphere_visual_id
+    
+    def create_sphere(self, position, orientation):
+            
+            sphere_id, sphere_visual_id = self.__initialise_sphere(position, orientation)
+            mass = self.get_mass()
+            inertia = self.get_inertia()
+            sphere_body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
 
 
             
