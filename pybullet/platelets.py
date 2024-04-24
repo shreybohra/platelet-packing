@@ -10,7 +10,7 @@ import random
 
 class Platelet:
 
-    def __init__(self, container_size = [1, 1, 1], density = 1, friction = 0.5, restitution = 0.2):
+    def __init__(self, container_size = [], density = 1, friction = 0.5, restitution = 0.2):
         self.container_size = container_size
         self.density = density
         self.friction = friction
@@ -62,15 +62,18 @@ class Sphere(Platelet):
         else:
             self.position_generator = position_generator
 
-    def get_volume(self):
-        return (4/3) * math.pi * self.radius**3
+    def __get_sphere_properties(self, sphere_id):
+        pos, _ = p.getBasePositionAndOrientation(sphere_id)
+        radius = p.getVisualShapeData(sphere_id)[0][3][0]
+        return pos, radius
 
-    def get_mass(self):
-        return self.density * self.get_volume()
+    def calculate_volume(self, sphere_id):
+        _, radius = self.__get_sphere_properties(sphere_id)
+        return (4/3) * math.pi * radius**3
 
-    def get_inertia(self):
-        return (2/5) * self.get_mass() * self.radius**2
-    
+    def calculate_mass(self, sphere_id):
+        return self.density * self.calculate_volume(self, sphere_id)
+
     def __initialise_sphere(self):
         
         self.radius = self.radius_generator()
@@ -96,4 +99,5 @@ class Sphere(Platelet):
             return body_id
     
 
-    
+
+        
