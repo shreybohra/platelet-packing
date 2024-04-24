@@ -99,5 +99,53 @@ class Sphere(Platelet):
             return body_id
     
 
-
+class Cuboid(Platelet):
+    
+        def __init__(self, density = 1, friction = 0.5, restitution = 0.2, halfExtents_generator = None, position_generator = None):
+            super().__init__(density, friction, restitution)
+    
+            if halfExtents_generator is None:
+                self.halfExtents_generator = self.default_generator()
+            else:
+                self.halfExtents_generator = halfExtents_generator
+    
+            if position_generator is None:
+                self.position_generator = self.generate_random_position()
+            else:
+                self.position_generator = position_generator
+    
+        def __get_cuboid_properties(self, cuboid_id):
+            pos, _ = p.getBasePositionAndOrientation(cuboid_id)
+            halfExtents = p.getVisualShapeData(cuboid_id)[0][3]
+            return pos, halfExtents
+    
+        def calculate_volume(self, cuboid_id):
+            _, halfExtents = self.__get_cuboid_properties(cuboid_id)
+            return halfExtents[0] * halfExtents[1] * halfExtents[2]
+    
+        def calculate_mass(self, cuboid_id):
+            return self.density * self.calculate_volume(self, cuboid_id)
+    
+        def __initialise_cuboid(self):
+            
+            self.halfExtents = self.halfExtents_generator()
+            cuboid_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=self.halfExtents)
+            cuboid_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=self.halfExtents, rgbaColor=[random.uniform(0, 1) for _ in range(3)] + [1])
+    
+            return cuboid_id, cuboid_visual_id
+        
+        def create_cuboid(self, position, orientation, enforce_collision = False, existing_bodies = []):
+                
+                cuboid_id, cuboid_visual_id = self.__initialise_cuboid()
+                position, orientation = self.position_generator()
+                mass = self.get_mass()
+                inertia = self.get_inertia()
+                body_id = p.createMultiBody(mass, cuboid_id, cuboid_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
+    
+                if enforce_collision:
+                    while self.check_collision(body_id, existing_bodies):
+                        position, orientation = self.position_generator()
+                        p.resetBasePositionAndOrientation(body_id, position, orientation)
+                
+                return body_id
         
