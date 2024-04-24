@@ -62,4 +62,39 @@ class BulletSim:
     def zoom_out(self):
         self.cameraDistance = self.cameraDistance * 1.1
         self.__set_camera()
-        
+
+    def step_simulation(self):
+        p.stepSimulation()
+
+    def create_container(self, dims, wall_thickness = 0.1, wall_color = [0.8, 0.8, 0.8, 1]):
+
+        base_dims = [dims[0]/2, dims[1]/2, 0.5] # half dims
+
+        # create the container
+        container_id = p.createCollisionShape(p.GEOM_BOX,halfExtents=base_dims)
+        container_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=base_dims, rgbaColor=[0.8, 0.8, 0.8, 1])
+        container_body_id = p.createMultiBody(0, container_id, container_visual_id, [0, 0, 0])
+
+        # Create collision shapes for the container walls
+        wall_height = dims[2]  
+        half_extents_x = (base_dims + wall_thickness)
+        half_extents_y = (base_dims + wall_thickness)
+
+        # Left wall
+        left_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height])
+        left_wall_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height], rgbaColor=wall_color)
+        # Right wall
+        right_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height])
+        right_wall_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height], rgbaColor=wall_color)
+        # Top wall
+        top_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[half_extents_x, wall_thickness, wall_height])
+        top_wall_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[half_extents_x, wall_thickness, wall_height], rgbaColor=wall_color)
+        # Bottom wall
+        bottom_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[half_extents_x, wall_thickness, wall_height])
+        bottom_wall_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[half_extents_x, wall_thickness, wall_height], rgbaColor=wall_color)
+
+        # Attach collision shapes to the container body
+        p.createMultiBody(0, left_wall_id, basePosition=[-base_dims[0] - wall_thickness, 0, wall_height], baseOrientation=[0, 0, 0, 1])
+        p.createMultiBody(0, right_wall_id, basePosition=[base_dims[0] + wall_thickness, 0, wall_height], baseOrientation=[0, 0, 0, 1])
+        p.createMultiBody(0, top_wall_id, basePosition=[0, base_dims[1] + wall_thickness, wall_height], baseOrientation=[0, 0, 0, 1])
+        p.createMultiBody(0, bottom_wall_id, basePosition=[0, -base_dims[1] - wall_thickness, wall_height], baseOrientation=[0, 0, 0, 1])
