@@ -38,7 +38,13 @@ class Platelet:
         z = container_size[2] + 20
         orientation = p.getQuaternionFromEuler([random.uniform(0, 2 * math.pi) for _ in range(3)])
         return [x, y, z], orientation
-
+    
+    def check_collision(self, body_id, existing_bodies):
+        for body in existing_bodies:
+            contact_points = p.getClosestPoints(body_id, body, distance=0.5)
+            if contact_points:
+                return True
+        return False
 
 
 class Sphere(Platelet):
@@ -80,10 +86,8 @@ class Sphere(Platelet):
             position, orientation = self.position_generator()
             mass = self.get_mass()
             inertia = self.get_inertia()
-            sphere_body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
+            body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
 
-            return sphere_body_id
+            return body_id
     
-
-
     
