@@ -60,22 +60,25 @@ print ("Starting simulation...")
 generated_vol = 0
 # initialise list of generated bodies 
 bodies = []
+body_count = 0
 
 while generated_vol < container_vol*1.5: #allow for some extra
     
     # decide cube or sphere
     weight = random.uniform(0, 1)
     if weight > 0.7:
-        print("Generating cuboid")
+        #print("Generating cuboid")
         body = cuboid
     else:
-        print("Generating sphere")
+        #print("Generating sphere")
         body = random_sphere
 
     new_body = body.create(enforce_collision=True)
     bodies.append(new_body)
+    body_count += 1
     generated_vol += body.volume
 
+    print(f"\r Generated {body_count} bodies, total volume: {generated_vol:.2f}", end="", flush=True)
     sim.step(count=20)
 
    
