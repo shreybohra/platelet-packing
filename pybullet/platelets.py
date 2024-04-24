@@ -24,13 +24,19 @@ class Platelet:
     def set_restitution(self, restitution):
         self.restitution = restitution
     
+    def default_generator(self):
+        return 1
 
 
 class Sphere(Platelet):
 
-    def __init__(self, radius, density = 1, friction = 0.5, restitution = 0.2, radius_generator = None):
+    def __init__(self, density = 1, friction = 0.5, restitution = 0.2, radius_generator = None):
         super().__init__(density, friction, restitution)
-        self.radius = radius
+        
+        if radius_generator is None:
+            self.radius_generator = self.default_generator()
+        else:
+            self.radius_generator = radius_generator
 
     def set_radius(self, radius):
         self.radius = radius
