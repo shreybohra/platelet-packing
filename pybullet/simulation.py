@@ -33,6 +33,8 @@ class BulletSim:
         self.dt = 1/fps
         p.setTimeStep(self.dt)
 
+    def __del__(self):
+        p.disconnect()
 
     def __set_camera(self):
         p.resetDebugVisualizerCamera(cameraDistance=self.cameraDistance, 
