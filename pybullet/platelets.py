@@ -55,7 +55,9 @@ class Platelet:
 
 class Sphere(Platelet):
 
-    def __init__(self, density = 1, friction = 0.5, restitution = 0.2, radius_generator = None, position_generator = None):
+    def __init__(self, density = 1, friction = 0.5, restitution = 0.2, 
+                 radius_generator = None, position_generator = None):
+        
         super().__init__(density, friction, restitution)
 
         if radius_generator is None:
@@ -84,7 +86,8 @@ class Sphere(Platelet):
         
         self.radius = self.radius_generator()
         sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius)
-        sphere_visual_id = p.createVisualShape(p.GEOM_SPHERE, radius=self.radius, rgbaColor=[random.uniform(0.1, 1) for _ in range(3)] + [1])
+        sphere_visual_id = p.createVisualShape(p.GEOM_SPHERE, radius=self.radius, 
+                                               rgbaColor=[random.uniform(0.1, 1) for _ in range(3)] + [1])
         print("Sphere ID:", sphere_id)
         print("Sphere Visual ID:", sphere_visual_id)
 
@@ -96,9 +99,10 @@ class Sphere(Platelet):
             position, orientation = self.position_generator()
             self.volume = (4/3) * math.pi * self.radius**3
             self.mass = self.density * self.volume
-            self.com, self.inertia = p.calculateMassProperties(sphere_id, self.mass)
 
-            body_id = p.createMultiBody(self.mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=self.inertia)
+            body_id = p.createMultiBody(self.mass, sphere_id, sphere_visual_id, 
+                                        position, orientation, 
+                                        lateralFriction=self.friction, restitution=self.restitution)
 
             if enforce_collision:
                 while self.check_collision(body_id, existing_bodies):
@@ -110,7 +114,9 @@ class Sphere(Platelet):
 
 class Cuboid(Platelet):
     
-        def __init__(self, density = 1, friction = 0.5, restitution = 0.2, dims_generator = None, position_generator = None):
+        def __init__(self, density = 1, friction = 0.5, restitution = 0.2, 
+                     dims_generator = None, position_generator = None):
+            
             super().__init__(density, friction, restitution)
     
             if dims_generator is None:
@@ -139,7 +145,8 @@ class Cuboid(Platelet):
             
             self.halfExtents = self.dims_generator()
             cuboid_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=self.halfExtents)
-            cuboid_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=self.halfExtents, rgbaColor=[random.uniform(0, 1) for _ in range(3)] + [1])
+            cuboid_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=self.halfExtents, 
+                                                   rgbaColor=[random.uniform(0, 1) for _ in range(3)] + [1])
     
             return cuboid_id, cuboid_visual_id
         
@@ -150,9 +157,10 @@ class Cuboid(Platelet):
                 
                 self.volume = np.prod(self.halfExtents) * 8
                 self.mass = self.density * self.volume
-                self.com, self.inertia = p.calculateMassProperties(cuboid_id, self.mass)
 
-                body_id = p.createMultiBody(self.mass, cuboid_id, cuboid_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=self.inertia)
+                body_id = p.createMultiBody(self.mass, cuboid_id, cuboid_visual_id, 
+                                            position, orientation, 
+                                            lateralFriction=self.friction, restitution=self.restitution)
     
                 if enforce_collision:
                     while self.check_collision(body_id, existing_bodies):
