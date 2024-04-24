@@ -31,6 +31,9 @@ class Platelet:
     def default_generator(self):
         return 1
     
+    def default_3d_generator(self):
+        return [0.1, 0.1, 0.1] # note: half extents (real dims are 2x)
+    
     def generate_random_position(self):
         container_size = self.container_size
         x = random.uniform(-container_size[0]+2, container_size[0]-2)
@@ -53,7 +56,7 @@ class Sphere(Platelet):
         super().__init__(density, friction, restitution)
 
         if radius_generator is None:
-            self.radius_generator = self.default_generator()
+            self.radius_generator = self.default_3d_generator()
         else:
             self.radius_generator = radius_generator
 
@@ -101,13 +104,13 @@ class Sphere(Platelet):
 
 class Cuboid(Platelet):
     
-        def __init__(self, density = 1, friction = 0.5, restitution = 0.2, halfExtents_generator = None, position_generator = None):
+        def __init__(self, density = 1, friction = 0.5, restitution = 0.2, dims_generator = None, position_generator = None):
             super().__init__(density, friction, restitution)
     
-            if halfExtents_generator is None:
-                self.halfExtents_generator = self.default_generator()
+            if dims_generator is None:
+                self.dims_generator = self.default_generator()
             else:
-                self.halfExtents_generator = halfExtents_generator
+                self.dims_generator = dims_generator
     
             if position_generator is None:
                 self.position_generator = self.generate_random_position()
@@ -128,7 +131,7 @@ class Cuboid(Platelet):
     
         def __initialise_cuboid(self):
             
-            self.halfExtents = self.halfExtents_generator()
+            self.halfExtents = self.dims_generator()
             cuboid_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=self.halfExtents)
             cuboid_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=self.halfExtents, rgbaColor=[random.uniform(0, 1) for _ in range(3)] + [1])
     
