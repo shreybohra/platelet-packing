@@ -92,7 +92,7 @@ class Sphere(Platelet):
             position, orientation = self.position_generator()
             volume = (4/3) * math.pi * self.radius**3
             mass = self.density * volume
-            inertia = (2/5) * mass * self.radius**2
+            com, inertia = p.calculateMassProperties(sphere_id, mass)
 
             body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
 
@@ -143,8 +143,11 @@ class Cuboid(Platelet):
                 
                 cuboid_id, cuboid_visual_id = self.__initialise_body()
                 position, orientation = self.position_generator()
-                mass = self.get_mass()
-                inertia = self.get_inertia()
+                
+                volume = np.prod(self.halfExtents) * 8
+                mass = self.density * volume
+                com, inertia = p.calculateMassProperties(cuboid_id, mass)
+
                 body_id = p.createMultiBody(mass, cuboid_id, cuboid_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
     
                 if enforce_collision:
