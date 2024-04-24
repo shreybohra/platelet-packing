@@ -85,7 +85,8 @@ class Sphere(Platelet):
     def __initialise_body(self):
         
         self.radius = self.radius_generator()
-        sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius)
+        sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius, 
+                                        lateralFriction=self.friction, restitution=self.restitution)
         sphere_visual_id = p.createVisualShape(p.GEOM_SPHERE, radius=self.radius, 
                                                rgbaColor=[random.uniform(0.1, 1) for _ in range(3)] + [1])
         print("Sphere ID:", sphere_id)
@@ -101,8 +102,7 @@ class Sphere(Platelet):
             self.mass = self.density * self.volume
 
             body_id = p.createMultiBody(self.mass, sphere_id, sphere_visual_id, 
-                                        position, orientation, 
-                                        lateralFriction=self.friction, restitution=self.restitution)
+                                        position, orientation)
 
             if enforce_collision:
                 while self.check_collision(body_id, existing_bodies):
@@ -144,7 +144,8 @@ class Cuboid(Platelet):
         def __initialise_body(self):
             
             self.halfExtents = self.dims_generator()
-            cuboid_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=self.halfExtents)
+            cuboid_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=self.halfExtents, 
+                                        lateralFriction=self.friction, restitution=self.restitution)
             cuboid_visual_id = p.createVisualShape(p.GEOM_BOX, halfExtents=self.halfExtents, 
                                                    rgbaColor=[random.uniform(0, 1) for _ in range(3)] + [1])
     
@@ -159,8 +160,7 @@ class Cuboid(Platelet):
                 self.mass = self.density * self.volume
 
                 body_id = p.createMultiBody(self.mass, cuboid_id, cuboid_visual_id, 
-                                            position, orientation, 
-                                            lateralFriction=self.friction, restitution=self.restitution)
+                                            position, orientation)
     
                 if enforce_collision:
                     while self.check_collision(body_id, existing_bodies):
