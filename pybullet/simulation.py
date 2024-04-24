@@ -20,22 +20,46 @@ class BulletSim:
         self.planeId = p.loadURDF("plane.urdf")
         self.start_pos = [0, 0, 0]
         self.start_orientation = p.getQuaternionFromEuler([0, 0, 0])
-        # zoom out
-        p.resetDebugVisualizerCamera(cameraDistance=30, cameraYaw=0, cameraPitch=-60, cameraTargetPosition=[0, 0, 0])
+        
+        self.cameraDistance = 30
+        self.cameraYaw = 0
+        self.cameraPitch = -60
+        self.cameraTargetPosition = [0, 0, 0]
+
+        self.__set_camera()
 
         self.fps = fps
         self.dt = 1/fps
         p.setTimeStep(self.dt)
 
-    def set_density(self, density):
-        self.density = density
 
-    def set_friction(self, friction):
-        self.friction = friction
-    
-    def set_restitution(self, restitution):
-        self.restitution = restitution
+    def __set_camera(self):
+        p.resetDebugVisualizerCamera(cameraDistance=self.cameraDistance, 
+                                     cameraYaw=self.cameraYaw, 
+                                     cameraPitch=self.cameraPitch, 
+                                     cameraTargetPosition=self.cameraTargetPosition)
 
-    def set_container_size(self, container_size):
-        self.container_size = container_size
+    def set_zoom(self, distance):
+        self.cameraDistance = distance
+        self.__set_camera()
+
+    def set_yaw(self, yaw):
+        self.cameraYaw = yaw
+        self.__set_camera()
     
+    def set_pitch(self, pitch):
+        self.cameraPitch = pitch
+        self.__set_camera()
+
+    def set_target(self, target):
+        self.cameraTargetPosition = target
+        self.__set_camera()
+
+    def zoom_in(self):
+        self.cameraDistance = self.cameraDistance * 0.9
+        self.__set_camera()
+
+    def zoom_out(self):
+        self.cameraDistance = self.cameraDistance * 1.1
+        self.__set_camera()
+        
