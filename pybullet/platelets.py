@@ -10,7 +10,7 @@ import random
 
 class Platelet:
 
-    def __init__(self, container_size, density = 1, friction = 0.5, restitution = 0.2):
+    def __init__(self, container_size = [1, 1, 1], density = 1, friction = 0.5, restitution = 0.2):
         self.container_size = container_size
         self.density = density
         self.friction = friction
@@ -24,11 +24,15 @@ class Platelet:
     
     def set_restitution(self, restitution):
         self.restitution = restitution
+
+    def set_container_size(self, container_size):
+        self.container_size = container_size
     
     def default_generator(self):
         return 1
     
-    def generate_random_position(self, container_size=self.container_size):
+    def generate_random_position(self):
+        container_size = self.container_size
         x = random.uniform(-container_size[0]+2, container_size[0]-2)
         y = random.uniform(-container_size[1]+2, container_size[1]-2)
         z = container_size[2] + 20
@@ -36,15 +40,21 @@ class Platelet:
         return [x, y, z], orientation
 
 
+
 class Sphere(Platelet):
 
-    def __init__(self, density = 1, friction = 0.5, restitution = 0.2, radius_generator = None):
+    def __init__(self, density = 1, friction = 0.5, restitution = 0.2, radius_generator = None, position_generator = None):
         super().__init__(density, friction, restitution)
 
         if radius_generator is None:
             self.radius_generator = self.default_generator()
         else:
             self.radius_generator = radius_generator
+
+        if position_generator is None:
+            self.position_generator = self.generate_random_position()
+        else:
+            self.position_generator = position_generator
 
     def get_volume(self):
         return (4/3) * math.pi * self.radius**3
@@ -55,7 +65,7 @@ class Sphere(Platelet):
     def get_inertia(self):
         return (2/5) * self.get_mass() * self.radius**2
     
-    def __initialise_sphere(self, position, orientation):
+    def __initialise_sphere(self):
         
         self.radius = self.radius_generator()
         sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius)
@@ -66,10 +76,14 @@ class Sphere(Platelet):
     
     def create_sphere(self, position, orientation):
             
-            sphere_id, sphere_visual_id = self.__initialise_sphere(position, orientation)
+            sphere_id, sphere_visual_id = self.__initialise_sphere()
+            position, orientation = self.position_generator()
             mass = self.get_mass()
             inertia = self.get_inertia()
             sphere_body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
 
+            return sphere_body_id
+    
 
-            
+
+    
