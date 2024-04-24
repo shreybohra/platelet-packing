@@ -80,7 +80,7 @@ class Sphere(Platelet):
 
         return sphere_id, sphere_visual_id
     
-    def create_sphere(self, position, orientation):
+    def create_sphere(self, position, orientation, enforce_collision = False, existing_bodies = []):
             
             sphere_id, sphere_visual_id = self.__initialise_sphere()
             position, orientation = self.position_generator()
@@ -88,6 +88,12 @@ class Sphere(Platelet):
             inertia = self.get_inertia()
             body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
 
+            if enforce_collision:
+                while self.check_collision(body_id, existing_bodies):
+                    position, orientation = self.position_generator()
+                    p.resetBasePositionAndOrientation(body_id, position, orientation)
+            
             return body_id
     
+
     
