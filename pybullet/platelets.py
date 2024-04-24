@@ -86,15 +86,15 @@ class Sphere(Platelet):
 
         return sphere_id, sphere_visual_id
     
-    def create(self, position, orientation, enforce_collision = False, existing_bodies = []):
+    def create(self, enforce_collision = False, existing_bodies = []):
             
             sphere_id, sphere_visual_id = self.__initialise_body()
             position, orientation = self.position_generator()
-            volume = (4/3) * math.pi * self.radius**3
-            mass = self.density * volume
-            com, inertia = p.calculateMassProperties(sphere_id, mass)
+            self.volume = (4/3) * math.pi * self.radius**3
+            self.mass = self.density * self.volume
+            self.com, self.inertia = p.calculateMassProperties(sphere_id, self.mass)
 
-            body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
+            body_id = p.createMultiBody(self.mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=self.inertia)
 
             if enforce_collision:
                 while self.check_collision(body_id, existing_bodies):
@@ -139,16 +139,16 @@ class Cuboid(Platelet):
     
             return cuboid_id, cuboid_visual_id
         
-        def create(self, position, orientation, enforce_collision = False, existing_bodies = []):
+        def create(self, enforce_collision = False, existing_bodies = []):
                 
                 cuboid_id, cuboid_visual_id = self.__initialise_body()
                 position, orientation = self.position_generator()
                 
-                volume = np.prod(self.halfExtents) * 8
-                mass = self.density * volume
-                com, inertia = p.calculateMassProperties(cuboid_id, mass)
+                self.volume = np.prod(self.halfExtents) * 8
+                self.mass = self.density * self.volume
+                self.com, self.inertia = p.calculateMassProperties(cuboid_id, self.mass)
 
-                body_id = p.createMultiBody(mass, cuboid_id, cuboid_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
+                body_id = p.createMultiBody(self.mass, cuboid_id, cuboid_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=self.inertia)
     
                 if enforce_collision:
                     while self.check_collision(body_id, existing_bodies):
