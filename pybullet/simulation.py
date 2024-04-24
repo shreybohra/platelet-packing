@@ -64,8 +64,10 @@ class BulletSim:
         self.cameraDistance = self.cameraDistance * 1.1
         self.__set_camera()
 
-    def step(self):
-        p.stepSimulation()
+    def step(self, count = 1):
+        for _ in range(count):
+            p.stepSimulation()
+            time.sleep(self.dt)
 
     def create_container(self, dims, wall_thickness = 0.1, wall_color = [0.8, 0.8, 0.8, 1]):
 
@@ -78,8 +80,8 @@ class BulletSim:
 
         # Create collision shapes for the container walls
         wall_height = dims[2]  
-        half_extents_x = (base_dims + wall_thickness)
-        half_extents_y = (base_dims + wall_thickness)
+        half_extents_x = (base_dims[0] + wall_thickness)
+        half_extents_y = (base_dims[1] + wall_thickness)
 
         # Left wall
         left_wall_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[wall_thickness, half_extents_y, wall_height])
