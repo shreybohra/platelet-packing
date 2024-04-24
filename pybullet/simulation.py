@@ -14,6 +14,11 @@ class BulletSim:
         self.friction = friction
         self.restitution = restitution
 
+        if gui:
+            self.client = p.connect(p.GUI)
+        else:
+            self.client = p.connect(p.DIRECT)
+
     def set_density(self, density):
         self.density = density
 
