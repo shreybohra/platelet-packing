@@ -8,16 +8,24 @@ import random
 #%%
 
 class BulletSim:
-    def __init__(self, container_size = [1, 1, 1], density = 1, friction = 0.5, restitution = 0.2, gui = True):
-        self.container_size = container_size
-        self.density = density
-        self.friction = friction
-        self.restitution = restitution
+    def __init__(self, gui = True, fps = 200):
 
         if gui:
             self.client = p.connect(p.GUI)
         else:
             self.client = p.connect(p.DIRECT)
+
+        p.setAdditionalSearchPath(pybullet_data.getDataPath())
+        p.setGravity(0,0,-9.81)
+        self.planeId = p.loadURDF("plane.urdf")
+        self.start_pos = [0, 0, 0]
+        self.start_orientation = p.getQuaternionFromEuler([0, 0, 0])
+        # zoom out
+        p.resetDebugVisualizerCamera(cameraDistance=30, cameraYaw=0, cameraPitch=-60, cameraTargetPosition=[0, 0, 0])
+
+        self.fps = fps
+        self.dt = 1/fps
+        p.setTimeStep(self.dt)
 
     def set_density(self, density):
         self.density = density
