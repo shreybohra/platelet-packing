@@ -77,7 +77,7 @@ class Sphere(Platelet):
     def calculate_mass(self, sphere_id):
         return self.density * self.calculate_volume(self, sphere_id)
 
-    def __initialise_sphere(self):
+    def __initialise_body(self):
         
         self.radius = self.radius_generator()
         sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius)
@@ -86,12 +86,14 @@ class Sphere(Platelet):
 
         return sphere_id, sphere_visual_id
     
-    def create_sphere(self, position, orientation, enforce_collision = False, existing_bodies = []):
+    def create(self, position, orientation, enforce_collision = False, existing_bodies = []):
             
-            sphere_id, sphere_visual_id = self.__initialise_sphere()
+            sphere_id, sphere_visual_id = self.__initialise_body()
             position, orientation = self.position_generator()
-            mass = self.get_mass()
-            inertia = self.get_inertia()
+            volume = (4/3) * math.pi * self.radius**3
+            mass = self.density * volume
+            inertia = (2/5) * mass * self.radius**2
+
             body_id = p.createMultiBody(mass, sphere_id, sphere_visual_id, position, orientation, lateralFriction=self.friction, restitution=self.restitution, localInertiaDiagonal=[inertia, inertia, inertia])
 
             if enforce_collision:
@@ -129,7 +131,7 @@ class Cuboid(Platelet):
         def calculate_mass(self, cuboid_id):
             return self.density * self.calculate_volume(self, cuboid_id)
     
-        def __initialise_cuboid(self):
+        def __initialise_body(self):
             
             self.halfExtents = self.dims_generator()
             cuboid_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=self.halfExtents)
@@ -137,9 +139,9 @@ class Cuboid(Platelet):
     
             return cuboid_id, cuboid_visual_id
         
-        def create_cuboid(self, position, orientation, enforce_collision = False, existing_bodies = []):
+        def create(self, position, orientation, enforce_collision = False, existing_bodies = []):
                 
-                cuboid_id, cuboid_visual_id = self.__initialise_cuboid()
+                cuboid_id, cuboid_visual_id = self.__initialise_body()
                 position, orientation = self.position_generator()
                 mass = self.get_mass()
                 inertia = self.get_inertia()
