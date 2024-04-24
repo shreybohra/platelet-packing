@@ -10,8 +10,8 @@ import random
 
 class Platelet:
 
-    def __init__(self, container_size = [], density = 1, friction = 0.5, restitution = 0.2):
-        self.container_size = container_size
+    def __init__(self, container_size, density = 1, friction = 0.5, restitution = 0.2):
+        self.container_size = [dim/2 for dim in container_size]
         self.density = density
         self.friction = friction
         self.restitution = restitution
@@ -27,6 +27,7 @@ class Platelet:
 
     def set_container_size(self, container_size):
         self.container_size = container_size
+        print("Container size set to: ", container_size)
     
     def default_generator(self):
         return 1
@@ -40,6 +41,8 @@ class Platelet:
         y = random.uniform(-container_size[1]+2, container_size[1]-2)
         z = container_size[2] + 20
         orientation = p.getQuaternionFromEuler([random.uniform(0, 2 * math.pi) for _ in range(3)])
+        print (f"Generated position: {x:.2f}, {y:.2f}, {z:.2f}")
+        print (f"Generated orientation: {orientation}")
         return [x, y, z], orientation
     
     def check_collision(self, body_id, existing_bodies):
@@ -56,12 +59,12 @@ class Sphere(Platelet):
         super().__init__(density, friction, restitution)
 
         if radius_generator is None:
-            self.radius_generator = self.default_3d_generator()
+            self.radius_generator = self.default_generator
         else:
             self.radius_generator = radius_generator
 
         if position_generator is None:
-            self.position_generator = self.generate_random_position()
+            self.position_generator = self.generate_random_position
         else:
             self.position_generator = position_generator
 
@@ -82,7 +85,8 @@ class Sphere(Platelet):
         self.radius = self.radius_generator()
         sphere_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius)
         sphere_visual_id = p.createVisualShape(p.GEOM_SPHERE, radius=self.radius, rgbaColor=[random.uniform(0.1, 1) for _ in range(3)] + [1])
-
+        print("Sphere ID:", sphere_id)
+        print("Sphere Visual ID:", sphere_visual_id)
 
         return sphere_id, sphere_visual_id
     
@@ -110,12 +114,12 @@ class Cuboid(Platelet):
             super().__init__(density, friction, restitution)
     
             if dims_generator is None:
-                self.dims_generator = self.default_generator()
+                self.dims_generator = self.default_3d_generator
             else:
                 self.dims_generator = dims_generator
     
             if position_generator is None:
-                self.position_generator = self.generate_random_position()
+                self.position_generator = self.generate_random_position
             else:
                 self.position_generator = position_generator
     

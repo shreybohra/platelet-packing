@@ -117,4 +117,5 @@ class BulletSim:
         if isinstance(restitution, list) and len(restitution) != 5:
             raise ValueError("restitution should be a scalar or a list of length 5")
         
-        p.changeDynamics(self.container_bodies, -1, lateralFriction=friction, restitution=restitution)
+        for idx, body in enumerate(self.container_bodies):
+            p.changeDynamics(body, -1, lateralFriction=friction[idx], restitution=restitution[idx])
