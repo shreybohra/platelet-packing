@@ -20,13 +20,14 @@ class BulletSim:
         self.planeId = p.loadURDF("plane.urdf")
         self.start_pos = [0, 0, 0]
         self.start_orientation = p.getQuaternionFromEuler([0, 0, 0])
-        
-        self.cameraDistance = 30
-        self.cameraYaw = 0
-        self.cameraPitch = -60
-        self.cameraTargetPosition = [0, 0, 0]
 
-        self.__set_camera()
+        if gui:        
+            self.cameraDistance = 30
+            self.cameraYaw = 0
+            self.cameraPitch = -60
+            self.cameraTargetPosition = [0, 0, 0]
+
+            self.__set_camera()
 
         self.fps = fps
         self.dt = 1/fps
@@ -63,7 +64,7 @@ class BulletSim:
         self.cameraDistance = self.cameraDistance * 1.1
         self.__set_camera()
 
-    def step_simulation(self):
+    def step(self):
         p.stepSimulation()
 
     def create_container(self, dims, wall_thickness = 0.1, wall_color = [0.8, 0.8, 0.8, 1]):
@@ -98,3 +99,18 @@ class BulletSim:
         p.createMultiBody(0, right_wall_id, basePosition=[base_dims[0] + wall_thickness, 0, wall_height], baseOrientation=[0, 0, 0, 1])
         p.createMultiBody(0, top_wall_id, basePosition=[0, base_dims[1] + wall_thickness, wall_height], baseOrientation=[0, 0, 0, 1])
         p.createMultiBody(0, bottom_wall_id, basePosition=[0, -base_dims[1] - wall_thickness, wall_height], baseOrientation=[0, 0, 0, 1])
+
+        self.container_bodies = [container_body_id, left_wall_id, right_wall_id, top_wall_id, bottom_wall_id]
+
+    def set_container_dynamics(self, friction = 0.5, restitution = 0.2):
+        if isinstance(friction, (int, float)):
+            friction = [friction] * 5
+        if isinstance(restitution, (int, float)):
+            restitution = [restitution] * 5
+
+        if isinstance(friction, list) and len(friction) != 5:
+            raise ValueError("friction should be a scalar or a list of length 5")
+        if isinstance(restitution, list) and len(restitution) != 5:
+            raise ValueError("restitution should be a scalar or a list of length 5")
+        
+        p.changeDynamics(self.container_bodies, -1, lateralFriction=friction, restitution=restitution)
