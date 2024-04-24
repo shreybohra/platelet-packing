@@ -116,12 +116,12 @@ class Cuboid(Platelet):
     
         def __get_cuboid_properties(self, cuboid_id):
             pos, _ = p.getBasePositionAndOrientation(cuboid_id)
-            halfExtents = p.getVisualShapeData(cuboid_id)[0][3]
+            halfExtents = p.getVisualShapeData(cuboid_id)[0]
             return pos, halfExtents
     
         def calculate_volume(self, cuboid_id):
             _, halfExtents = self.__get_cuboid_properties(cuboid_id)
-            return halfExtents[0] * halfExtents[1] * halfExtents[2]
+            return halfExtents[0] * halfExtents[1] * halfExtents[2] * 8
     
         def calculate_mass(self, cuboid_id):
             return self.density * self.calculate_volume(self, cuboid_id)
